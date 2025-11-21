@@ -10,6 +10,6 @@ Route::get('/user', function (Request $request) {
 Route::get('/hello', function () {
     return response()->json([
         'message' => 'Hello from Lambda!',
-        'status' => 'success'
+        'status' => 'success',
     ]);
 });
