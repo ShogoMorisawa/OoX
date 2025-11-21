@@ -15,7 +15,15 @@ provider:
     # Environment variables
     environment:
         APP_ENV: production # Or use ${sls:stage} if you want the environment to match the stage
+        APP_KEY: ${env:APP_KEY} # .envのキーを使う
         SESSION_DRIVER: cookie # Change to database if you have set up a database
+        # DB設定（.envの値をそのままAWSに渡す設定）
+        DB_CONNECTION: pgsql
+        DB_HOST: ${env:DB_HOST}
+        DB_PORT: ${env:DB_PORT}
+        DB_DATABASE: ${env:DB_DATABASE}
+        DB_USERNAME: ${env:DB_USERNAME}
+        DB_PASSWORD: ${env:DB_PASSWORD}
 
 package:
     # Files and directories to exclude from deployment
