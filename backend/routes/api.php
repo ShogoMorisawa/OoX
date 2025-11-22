@@ -13,3 +13,17 @@ Route::get('/hello', function () {
         'status' => 'success',
     ]);
 });
+
+Route::get('/calculate', function (Request $request) {
+    $mockResponse = [
+        'order' => [
+            'Ni',
+            'Ti',
+            ['Fe', 'Fi', 'Ne'],
+            'Se',
+            ['Te', 'Si'],
+        ],
+    ];
+
+    return response()->json($mockResponse);
+});
