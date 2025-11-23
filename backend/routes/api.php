@@ -15,22 +15,17 @@ Route::get('/hello', function () {
     ]);
 });
 
-Route::post('/calculate', function (Request $request) {
-    $matches = $request->input('matches');
+Route::post('/calculate', function (Request $request, CalculateService $service) {
+    $matches = $request->json('matches', []);
 
-    $service = new CalculateService();
     $graph = $service->buildGraph($matches);
+    $sccs = $service->findSCCs($graph);
+
     logger()->info('Generated Graph:', $graph);
+    logger()->info('Detected SCCs:', $sccs);
 
-    $mockResponse = [
-        'order' => [
-            'Ni',
-            'Ti',
-            ['Fe', 'Fi', 'Ne'],
-            'Se',
-            ['Te', 'Si'],
-        ],
-    ];
-
-    return response()->json($mockResponse);
+    return response()->json([
+        'graph' => $graph,
+        'sccs' => $sccs,
+    ]);
 });
