@@ -22,7 +22,9 @@ const MOCK_MATCHES = [
 // Responseの型
 type OrderElement = FunctionCode | FunctionCode[];
 type CalculateResponse = {
-  order: OrderElement[];
+  order?: OrderElement[]; // optional for future ordering response
+  graph?: Record<string, FunctionCode[]>;
+  sccs?: FunctionCode[][];
 };
 
 export default function Home() {
@@ -60,6 +62,10 @@ export default function Home() {
     }
   };
 
+  const hasOrder = Array.isArray(result?.order);
+  const sccs = result?.sccs ?? [];
+  const graph = result?.graph ?? {};
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 font-sans">
       <h1 className="text-4xl font-bold mb-8 text-indigo-600">
@@ -81,7 +87,7 @@ export default function Home() {
           {loading ? "計算中..." : "Step 2: Calculate APIを叩く"}
         </button>
 
-        {result && (
+        {hasOrder && result?.order && (
           <div className="mt-6">
             <h2 className="text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">
               結果序列 (Order)
@@ -120,6 +126,65 @@ export default function Home() {
                 </li>
               ))}
             </ol>
+          </div>
+        )}
+
+        {!hasOrder && result && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-2 text-gray-800 border-b pb-2">
+                強連結成分 (SCC)
+              </h2>
+              {sccs.length === 0 ? (
+                <p className="text-gray-600 text-sm">SCC は検出されていません。</p>
+              ) : (
+                <ul className="space-y-3">
+                  {sccs.map((component, idx) => (
+                    <li key={idx} className="p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg shadow-sm">
+                      <div className="text-xs text-gray-500 mb-1">SCC #{idx + 1}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {component.map((func, i) => (
+                          <span
+                            key={i}
+                            className="px-3 py-1 bg-yellow-400 text-white rounded-full text-sm font-semibold"
+                          >
+                            {func}
+                          </span>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold mb-2 text-gray-800 border-b pb-2">
+                グラフ (隣接リスト)
+              </h2>
+              {Object.keys(graph).length === 0 ? (
+                <p className="text-gray-600 text-sm">グラフ情報がありません。</p>
+              ) : (
+                <ul className="space-y-2">
+                  {Object.entries(graph).map(([node, edges]) => (
+                    <li key={node} className="flex items-start gap-2">
+                      <span className="font-mono text-sm text-gray-700">{node}</span>
+                      <span className="text-gray-500">→</span>
+                      <div className="flex flex-wrap gap-2">
+                        {edges.map((edge, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded"
+                          >
+                            {edge}
+                          </span>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
       </div>
