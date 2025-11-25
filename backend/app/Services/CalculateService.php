@@ -16,6 +16,11 @@ class CalculateService
 
     protected array $sccs = [];
 
+    // Topological sort helpers for SCC DAG
+    protected array $visited = [];
+
+    protected array $orderList = [];
+
     public function buildGraph(array $matches): array
     {
         $graph = [];
@@ -56,6 +61,22 @@ class CalculateService
         return $this->sccs;
     }
 
+    public function getFinalOrder(array $matches): array
+    {
+        $graph = $this->buildGraph($matches);
+        $sccs = $this->findSCCs($graph);
+
+        $nodeToScc = $this->mapNodesToSccs($sccs);
+        $sccGraph = $this->buildSccDag($graph, $sccs, $nodeToScc);
+        $orderSccIds = $this->topologicalSortScc($sccGraph);
+
+        // SCC ID の順番をそのままノード列に変換
+        $order = array_map(fn ($id) => $sccs[$id], $orderSccIds);
+
+        // 要素が1つなら配列ではなく文字列に戻す
+        return array_map(fn ($x) => count($x) === 1 ? $x[0] : $x, $order);
+    }
+
     protected function dfsTarjan(string $at, array $graph): void
     {
         // 初回訪問で id/low を同じ値にセットし、スタックに積む
@@ -88,5 +109,67 @@ class CalculateService
             }
             $this->sccs[] = $scc;
         }
+    }
+
+    protected function mapNodesToSccs(array $sccs): array
+    {
+        $map = [];
+        foreach ($sccs as $index => $scc) {
+            foreach ($scc as $node) {
+                $map[$node] = $index;
+            }
+        }
+
+        return $map;
+    }
+
+    protected function buildSccDag(array $graph, array $sccs, array $nodeToScc): array
+    {
+        $sccGraph = [];
+        $count = count($sccs);
+
+        // SCC ノードを初期化
+        for ($i = 0; $i < $count; $i++) {
+            $sccGraph[$i] = [];
+        }
+
+        foreach ($graph as $u => $adj) {
+            $uScc = $nodeToScc[$u];
+
+            foreach ($adj as $v) {
+                $vScc = $nodeToScc[$v];
+
+                if ($uScc !== $vScc && ! in_array($vScc, $sccGraph[$uScc])) {
+                    $sccGraph[$uScc][] = $vScc;
+                }
+            }
+        }
+
+        return $sccGraph;
+    }
+
+    protected function dfsSortScc(int $at, array $sccGraph): void
+    {
+        $this->visited[$at] = true;
+        foreach ($sccGraph[$at] as $to) {
+            if (! isset($this->visited[$to])) {
+                $this->dfsSortScc($to, $sccGraph);
+            }
+        }
+        $this->orderList[] = $at;
+    }
+
+    protected function topologicalSortScc(array $sccGraph): array
+    {
+        $this->visited = [];
+        $this->orderList = [];
+
+        foreach (array_keys($sccGraph) as $sccId) {
+            if (! isset($this->visited[$sccId])) {
+                $this->dfsSortScc($sccId, $sccGraph);
+            }
+        }
+
+        return array_reverse($this->orderList);
     }
 }

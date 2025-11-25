@@ -1,8 +1,8 @@
 <?php
 
+use App\Services\CalculateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Services\CalculateService;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -20,12 +20,7 @@ Route::post('/calculate', function (Request $request, CalculateService $service)
 
     $graph = $service->buildGraph($matches);
     $sccs = $service->findSCCs($graph);
+    $order = $service->getFinalOrder($matches);
 
-    logger()->info('Generated Graph:', $graph);
-    logger()->info('Detected SCCs:', $sccs);
-
-    return response()->json([
-        'graph' => $graph,
-        'sccs' => $sccs,
-    ]);
+    return response()->json(compact('order'));
 });
