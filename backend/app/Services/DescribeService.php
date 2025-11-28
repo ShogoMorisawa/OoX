@@ -16,7 +16,7 @@ class DescribeService
         $prompt = $this->buildGeminiPrompt($finalOrder, $healthStatus, $tierMap);
 
         try {
-            $result = Gemini::generativeModel(model: 'gemini-3.0-flash')
+            $result = Gemini::generativeModel(model: 'models/gemini-pro-latest')
                 ->generateContent($prompt);
             $fullText = $result->text();
 
