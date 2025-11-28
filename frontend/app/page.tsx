@@ -351,7 +351,7 @@ export default function Home() {
           className={`w-full py-3 rounded-xl text-white font-bold text-lg transition-all ${
             loading
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+              : "bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
           }`}
         >
           {loading ? "計算中..." : "序列を計算する"}
