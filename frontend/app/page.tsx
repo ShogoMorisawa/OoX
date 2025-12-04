@@ -5,6 +5,16 @@ import { useState } from "react";
 
 import StartScreen from "@/components/screens/StartScreen";
 
+// --- ステップ定数 ---
+export const OOX_STEPS = {
+  START: "start",
+  QUIZ: "quiz",
+  RESOLVE: "resolve",
+  RESULT: "result",
+} as const;
+
+type Step = (typeof OOX_STEPS)[keyof typeof OOX_STEPS];
+
 // --- 型定義 ---
 type FunctionCode = "Ni" | "Ne" | "Ti" | "Te" | "Fi" | "Fe" | "Si" | "Se";
 type OrderElement = FunctionCode | FunctionCode[];
@@ -81,9 +91,7 @@ const BASE_URL = "https://6cs4ipgnf9.execute-api.ap-northeast-1.amazonaws.com"; 
 
 export default function Home() {
   // --- State ---
-  const [step, setStep] = useState<"start" | "quiz" | "resolve" | "result">(
-    "start"
-  ); // 画面切り替え用
+  const [step, setStep] = useState<Step>(OOX_STEPS.START); // 画面切り替え用
 
   const [answers, setAnswers] = useState<Record<string, FunctionCode>>(() => {
     const initial: Record<string, FunctionCode> = {};
@@ -107,7 +115,7 @@ export default function Home() {
 
   // スタートボタンを押した時の処理
   const handleStart = () => {
-    setStep("quiz");
+    setStep(OOX_STEPS.QUIZ);
   };
 
   const handleChange = (id: string, value: FunctionCode) => {
@@ -160,7 +168,7 @@ export default function Home() {
         const block = data.order[conflictIndex] as FunctionCode[];
         setConflictBlock(block);
         setCurrentBlockIndex(conflictIndex);
-        setStep("resolve"); // 解決画面へ
+        setStep(OOX_STEPS.RESOLVE); // 解決画面へ
         setLoading(false); // 一旦ロード解除
       } else {
         // 葛藤がなければそのまま分析へ
@@ -248,7 +256,7 @@ export default function Home() {
 
       const data: DescribeResponse = await res.json();
       setDescribeResult(data);
-      setStep("result"); // 結果画面へ移動
+      setStep(OOX_STEPS.RESULT); // 結果画面へ移動
     } catch (e) {
       console.error(e);
       alert("分析エラーが発生しました");
@@ -260,12 +268,12 @@ export default function Home() {
   // --- UI Render ---
 
   // スタート画面
-  if (step === "start") {
+  if (step === OOX_STEPS.START) {
     return <StartScreen onStart={handleStart} />;
   }
 
   // 葛藤解決画面 (Resolve Phase)
-  if (step === "resolve" && calculateResult) {
+  if (step === OOX_STEPS.RESOLVE && calculateResult) {
     const targetBlock =
       conflictBlock.length > 0
         ? conflictBlock
@@ -363,7 +371,7 @@ export default function Home() {
     );
   }
 
-  if (step === "result" && describeResult && calculateResult) {
+  if (step === OOX_STEPS.RESULT && describeResult && calculateResult) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-6 font-sans">
         <div className="max-w-2xl w-full bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-700">
@@ -424,7 +432,7 @@ export default function Home() {
             </div>
 
             <button
-              onClick={() => setStep("quiz")}
+              onClick={() => setStep(OOX_STEPS.QUIZ)}
               className="w-full py-4 rounded-xl font-bold text-lg bg-white text-gray-900 hover:bg-gray-200 transition-all"
             >
               もう一度鏡を覗く
