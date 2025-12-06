@@ -3,6 +3,17 @@
 import { useState } from "react";
 import { FunctionCode, Question } from "@/types/oox";
 
+const CELL_COLOR: Record<FunctionCode, string> = {
+  Ni: "from-indigo-400 to-indigo-500",
+  Ne: "from-yellow-300 to-amber-300",
+  Ti: "from-slate-400 to-slate-500",
+  Te: "from-rose-400 to-red-500",
+  Fi: "from-pink-400 to-rose-400",
+  Fe: "from-cyan-300 to-sky-400",
+  Si: "from-amber-500 to-amber-600",
+  Se: "from-green-500 to-emerald-500",
+};
+
 type Props = {
   questions: Question[];
   answers: Record<string, FunctionCode>;
@@ -72,7 +83,9 @@ export default function QuizScreen({
         {/* 現在の質問 */}
         <div className="space-y-4 rounded-2xl p-5 bg-white/60 backdrop-blur-sm border border-white/70 shadow-sm">
           <div className="flex items-center justify-between text-xs text-gray-400 font-mono mb-3">
-            <span className="uppercase tracking-widest text-gray-500">Question</span>
+            <span className="uppercase tracking-widest text-gray-500">
+              Question
+            </span>
             <span>
               Q{index + 1} / {totalQuestions}
             </span>
@@ -92,7 +105,9 @@ export default function QuizScreen({
                     : "bg-sky-100/60 border-sky-100 text-gray-700 hover:-translate-y-0.5 hover:shadow-md"
                 }`}
             >
-              <span className="block text-sm font-semibold">{currentQuestion.left}</span>
+              <span className="block text-sm font-semibold">
+                {currentQuestion.left}
+              </span>
             </button>
 
             <button
@@ -131,6 +146,57 @@ export default function QuizScreen({
               ? "結果を見る"
               : "次の質問へ"}
           </button>
+        </div>
+      </div>
+
+      {/* 下部ビジュアル：左右の細胞 + 水位付きポッド */}
+      <div className="w-full max-w-3xl flex items-end justify-center gap-10 mt-10">
+        {/* 左の細胞 */}
+        <div
+          className={`w-16 h-16 rounded-full bg-gradient-to-br ${
+            CELL_COLOR[currentQuestion.left]
+          } shadow-lg shadow-sky-200/60 flex items-center justify-center relative`}
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-white shadow-sm">
+              <span className="block w-2 h-2 mt-[1px] ml-[1px] rounded-full bg-slate-800" />
+            </span>
+            <span className="w-3 h-3 rounded-full bg-white shadow-sm">
+              <span className="block w-2 h-2 mt-[1px] ml-[1px] rounded-full bg-slate-800" />
+            </span>
+          </div>
+          <span className="absolute bottom-1 w-6 h-1 rounded-full bg-white/70 opacity-80"></span>
+        </div>
+
+        {/* ポッド */}
+        <div className="relative w-40 h-52 rounded-[3rem] bg-white/40 backdrop-blur-md border border-white/70 shadow-lg overflow-hidden">
+          {/* 水位（progressを高さに反映） */}
+          <div
+            className="absolute inset-x-0 bottom-0 transition-all duration-700"
+            style={{ height: `${20 + progress * 60}%` }}
+          >
+            <div className="w-full h-full bg-gradient-to-t from-sky-300/80 via-sky-200/60 to-sky-100/20" />
+          </div>
+          {/* ハイライト線 */}
+          <div className="absolute top-3 left-3 w-28 h-40 rounded-[2rem] border-t border-l border-white/60 opacity-70 pointer-events-none" />
+          <div className="absolute bottom-4 right-6 w-8 h-8 rounded-full bg-white/30 blur-lg opacity-70 pointer-events-none" />
+        </div>
+
+        {/* 右の細胞 */}
+        <div
+          className={`w-16 h-16 rounded-full bg-gradient-to-br ${
+            CELL_COLOR[currentQuestion.right]
+          } shadow-lg shadow-sky-200/60 flex items-center justify-center relative`}
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-white shadow-sm">
+              <span className="block w-2 h-2 mt-[1px] ml-[1px] rounded-full bg-slate-800" />
+            </span>
+            <span className="w-3 h-3 rounded-full bg-white shadow-sm">
+              <span className="block w-2 h-2 mt-[1px] ml-[1px] rounded-full bg-slate-800" />
+            </span>
+          </div>
+          <span className="absolute bottom-1 w-6 h-1 rounded-full bg-white/70 opacity-80"></span>
         </div>
       </div>
     </div>
