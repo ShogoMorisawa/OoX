@@ -14,16 +14,7 @@ import {
   DescribeResponse,
   Question,
 } from "@/types/oox";
-
-// --- ステップ定数 ---
-export const OOX_STEPS = {
-  START: "start",
-  QUIZ: "quiz",
-  RESOLVE: "resolve",
-  RESULT: "result",
-} as const;
-
-type Step = (typeof OOX_STEPS)[keyof typeof OOX_STEPS];
+import { OOX_STEPS, Step } from "@/constants/steps";
 
 // --- 定数データ (簡略化のため一部のみ表示、実際は28問) ---
 const QUESTIONS: Question[] = [
@@ -116,25 +107,25 @@ export default function Home() {
     setCalculateResult(null);
     setResolvedBlock([]);
 
-    // const matches = QUESTIONS.map((q) => ({
-    //   id: q.id,
-    //   winner: answers[q.id],
-    //   loser: answers[q.id] === q.left ? q.right : q.left,
-    // }));
+    const matches = QUESTIONS.map((q) => ({
+      id: q.id,
+      winner: answers[q.id],
+      loser: answers[q.id] === q.left ? q.right : q.left,
+    }));
 
-    const matches = [
-      { winner: "Ni", loser: "Ti", id: "q01" },
-      { winner: "Ni", loser: "Ne", id: "q02" },
-      { winner: "Ti", loser: "Fe", id: "q03" },
-      { winner: "Ti", loser: "Fi", id: "q04" },
-      // 🌀 ここで矛盾ループ (Fe > Fi > Te > Fe)
-      { winner: "Fe", loser: "Fi", id: "q05" },
-      { winner: "Fi", loser: "Te", id: "q06" },
-      { winner: "Te", loser: "Fe", id: "q07" },
-      // その他
-      { winner: "Fe", loser: "Se", id: "q08" },
-      { winner: "Se", loser: "Si", id: "q10" },
-    ];
+    // const matches = [
+    //   { winner: "Ni", loser: "Ti", id: "q01" },
+    //   { winner: "Ni", loser: "Ne", id: "q02" },
+    //   { winner: "Ti", loser: "Fe", id: "q03" },
+    //   { winner: "Ti", loser: "Fi", id: "q04" },
+    //   // 🌀 ここで矛盾ループ (Fe > Fi > Te > Fe)
+    //   { winner: "Fe", loser: "Fi", id: "q05" },
+    //   { winner: "Fi", loser: "Te", id: "q06" },
+    //   { winner: "Te", loser: "Fe", id: "q07" },
+    //   // その他
+    //   { winner: "Fe", loser: "Se", id: "q08" },
+    //   { winner: "Se", loser: "Si", id: "q10" },
+    // ];
 
     try {
       const res = await fetch(`${BASE_URL}/api/calculate`, {
