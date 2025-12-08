@@ -2,17 +2,7 @@
 
 import { useState } from "react";
 import { FunctionCode, Question } from "@/types/oox";
-
-const CELL_COLOR: Record<FunctionCode, string> = {
-  Ni: "from-indigo-400 to-indigo-500",
-  Ne: "from-yellow-300 to-amber-300",
-  Ti: "from-slate-400 to-slate-500",
-  Te: "from-rose-400 to-red-500",
-  Fi: "from-pink-400 to-rose-400",
-  Fe: "from-cyan-300 to-sky-400",
-  Si: "from-amber-500 to-amber-600",
-  Se: "from-green-500 to-emerald-500",
-};
+import { CELL_COLORS } from "@/constants/cells";
 
 type Props = {
   questions: Question[];
@@ -153,8 +143,8 @@ export default function QuizScreen({
       <div className="w-full max-w-3xl flex items-end justify-center gap-10 mt-10">
         {/* 左の細胞 */}
         <div
-          className={`w-16 h-16 rounded-full bg-gradient-to-br ${
-            CELL_COLOR[currentQuestion.left]
+          className={`w-16 h-16 rounded-full ${
+            CELL_COLORS[currentQuestion.left]
           } shadow-lg shadow-sky-200/60 flex items-center justify-center relative`}
         >
           <div className="flex items-center gap-2">
@@ -184,8 +174,8 @@ export default function QuizScreen({
 
         {/* 右の細胞 */}
         <div
-          className={`w-16 h-16 rounded-full bg-gradient-to-br ${
-            CELL_COLOR[currentQuestion.right]
+          className={`w-16 h-16 rounded-full ${
+            CELL_COLORS[currentQuestion.right]
           } shadow-lg shadow-sky-200/60 flex items-center justify-center relative`}
         >
           <div className="flex items-center gap-2">
