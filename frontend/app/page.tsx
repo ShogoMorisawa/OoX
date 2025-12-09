@@ -1,12 +1,11 @@
 // frontend/app/page.tsx
 "use client";
 
-import { useState } from "react";
-
 import StartScreen from "@/components/screens/StartScreen";
 import QuizScreen from "@/components/screens/QuizScreen";
 import ResolveScreen from "@/components/screens/ResolveScreen";
 import ResultScreen from "@/components/screens/ResultScreen";
+import { useOoX } from "@/hooks/useOoX";
 import {
   FunctionCode,
   OrderElement,
@@ -20,22 +19,24 @@ import { QUESTIONS } from "@/constants/questions";
 const BASE_URL = "https://6cs4ipgnf9.execute-api.ap-northeast-1.amazonaws.com"; // ★あなたのURL
 
 export default function Home() {
-  // --- State ---
-  const [step, setStep] = useState<Step>(OOX_STEPS.START); // 画面切り替え用
-
-  const [answers, setAnswers] = useState<Record<string, FunctionCode>>({});
-
-  const [calculateResult, setCalculateResult] =
-    useState<CalculateResponse | null>(null);
-  const [describeResult, setDescribeResult] = useState<DescribeResponse | null>(
-    null
-  );
-
-  const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [conflictBlock, setConflictBlock] = useState<FunctionCode[]>([]);
-  const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
-
+  const {
+    step,
+    answers,
+    calculateResult,
+    describeResult,
+    loading,
+    loadingMessage,
+    conflictBlock,
+    resolvedBlock,
+    setStep,
+    setAnswers,
+    setCalculateResult,
+    setDescribeResult,
+    setLoading,
+    setLoadingMessage,
+    setConflictBlock,
+    setResolvedBlock,
+  } = useOoX();
   // --- Handlers ---
 
   // スタートボタンを押した時の処理
