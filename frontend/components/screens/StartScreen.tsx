@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { CELL_COLORS } from "@/constants/cells";
 
@@ -23,80 +24,71 @@ export default function StartScreen({ onStart }: Props) {
   if (cells.length === 0) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 via-sky-50/60 to-sky-100 relative overflow-hidden">
-      {/* 背景の薄い気泡たち */}
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 via-sky-100/50 to-sky-200/30 relative overflow-hidden">
+      {/* 1. 背景の装飾（CSSで作る薄い光の玉） */}
       <div className="pointer-events-none absolute inset-0">
-        <span className="absolute left-10 top-32 w-4 h-4 rounded-full bg-sky-100 opacity-70 animate-float-slow" />
-        <span className="absolute right-16 top-52 w-6 h-6 rounded-full bg-sky-100 opacity-60 animate-float-medium" />
-        <span className="absolute left-1/4 bottom-24 w-3 h-3 rounded-full bg-sky-100 opacity-50 animate-float-fast" />
-        <span className="absolute right-1/5 bottom-32 w-8 h-8 rounded-full bg-sky-100 opacity-60 animate-float-slow" />
+        <div className="absolute left-10 top-32 w-32 h-32 rounded-full bg-sky-200 mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
+        <div className="absolute right-10 bottom-32 w-32 h-32 rounded-full bg-pink-200 mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
       </div>
 
-      {/* タイトル */}
-      <h1 className="relative text-6xl md:text-7xl font-light tracking-[0.3em] text-slate-800 mb-10">
+      {/* 2. タイトル */}
+      <h1 className="relative z-10 text-6xl md:text-7xl font-light tracking-[0.2em] text-slate-700 mb-6 drop-shadow-sm">
         OoX
       </h1>
 
-      {/* ポッド全体 */}
-      <div className="relative mb-12">
-        {/* ぼんやりした外側の光輪 */}
-        <div className="absolute -inset-6 rounded-[3rem] bg-sky-200/40 blur-2xl" />
+      {/* 3. メインビジュアル（カプセルと細胞） */}
+      <div className="relative z-10 mb-10 w-[300px] h-[380px] flex items-center justify-center">
+        {/* レイヤーA: カプセルの背後の光（ぼんやり光らせる） */}
+        <div className="absolute inset-8 bg-sky-300/20 rounded-[4rem] blur-2xl" />
 
-        {/* ガラスカプセル本体 */}
-        <div className="relative w-72 h-96 md:w-80 md:h-[420px] rounded-[3rem] bg-white/40 border border-white/60 shadow-xl shadow-sky-200/80 backdrop-blur-2 overflow-hidden flex items-center justify-center">
-          {/* 内側のグラデーション（液体っぽさ） */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-sky-50/80 to-sky-100/70" />
-
-          {/* 反射ハイライト */}
-          <div className="absolute -left-6 top-3 w-40 h-72 rounded-full bg-white/50 blur-xl opacity-80 rotate-[-18deg]" />
-          <div className="absolute right-0 bottom-6 w-32 h-32 rounded-full bg-white/30 blur-2xl opacity-70" />
-
-          {/* ポッド内の小さな気泡 */}
-          <div className="absolute inset-0 pointer-events-none">
-            <span className="absolute left-16 top-24 w-2 h-2 rounded-full bg-white/70 opacity-70 animate-float-slow" />
-            <span className="absolute right-16 top-40 w-3 h-3 rounded-full bg-white/70 opacity-60 animate-float-medium" />
-            <span className="absolute left-24 bottom-24 w-2 h-2 rounded-full bg-white/70 opacity-60 animate-float-fast" />
-          </div>
-
-          {/* 細胞1 */}
-          <div
-            className={`relative z-10 w-20 h-20 rounded-full ${cells[0]} shadow-lg shadow-sky-200/70 animate-float-medium flex items-center justify-center`}
-          >
-            <div className="relative w-12 h-7 flex justify-between">
-              <span className="w-4 h-4 rounded-full bg-white shadow-sm">
-                <span className="block w-2.5 h-2.5 mt-1 ml-1 rounded-full bg-slate-900" />
-              </span>
-              <span className="w-4 h-4 rounded-full bg-white shadow-sm">
-                <span className="block w-2.5 h-2.5 mt-1 ml-1 rounded-full bg-slate-900" />
-              </span>
+        {/* レイヤーB: 中身の細胞たち（画像をアニメーションさせる） */}
+        <div className="absolute inset-0 z-20 overflow-hidden rounded-[3.5rem]">
+          <div className="relative w-full h-full">
+            {/* 赤い細胞 */}
+            <div className="absolute top-[25%] left-[20%] w-24 h-24 animate-float-medium">
+              <Image
+                src="/images/oox_start_cell-red.png"
+                alt="Red Cell"
+                width={120}
+                height={120}
+                className="object-contain drop-shadow-md"
+              />
             </div>
-          </div>
 
-          {/* 細胞2 */}
-          <div
-            className={`absolute bottom-16 right-16 w-18 h-18 rounded-full ${cells[1]} shadow-lg shadow-sky-200/70 animate-float-slow flex items-center justify-center`}
-          >
-            <div className="relative w-11 h-6 flex justify-between">
-              <span className="w-3.5 h-3.5 rounded-full bg-white shadow-sm">
-                <span className="block w-2 h-2 mt-[3px] ml-[3px] rounded-full bg-slate-900" />
-              </span>
-              <span className="w-3.5 h-3.5 rounded-full bg-white shadow-sm">
-                <span className="block w-2 h-2 mt-[3px] ml-[3px] rounded-full bg-slate-900" />
-              </span>
+            {/* 青い細胞 */}
+            <div className="absolute bottom-[25%] right-[15%] w-20 h-20 animate-float-slow">
+              <Image
+                src="/images/oox_start_cell-lightBlue.png"
+                alt="Blue Cell"
+                width={100}
+                height={100}
+                className="object-contain drop-shadow-md"
+              />
             </div>
           </div>
         </div>
+
+        {/* レイヤーC: カプセル本体（ガラス） */}
+        {/* pointer-events-none にすることで、上の画像があってもクリックを邪魔しないようにする */}
+        <div className="relative z-10 w-full h-full pointer-events-none">
+          <Image
+            src="/images/oox_start_pod.png"
+            alt="Glass Pod"
+            fill
+            className="object-contain" // アスペクト比を維持して枠に収める
+            priority // 最初に読み込む
+          />
+        </div>
       </div>
 
-      {/* 説明文 */}
-      <p className="relative text-slate-500 text-sm md:text-base mb-8 tracking-wide">
+      {/* 4. 説明文とボタン */}
+      <p className="relative z-10 text-slate-500 text-sm md:text-base mb-8 tracking-wide font-medium">
         質問に答えてあなたのキャラを生み出そう！
       </p>
 
-      {/* START */}
       <button
         onClick={onStart}
-        className="relative px-16 py-4 rounded-full bg-sky-400 text-white font-semibold text-lg shadow-lg shadow-sky-300/70 hover:bg-sky-500 hover:shadow-sky-400/60 hover:-translate-y-0.5 transition-all active:translate-y-0"
+        className="relative z-10 px-16 py-4 rounded-full bg-sky-400 text-white font-bold text-lg shadow-lg shadow-sky-300/50 hover:bg-sky-500 hover:shadow-sky-400/60 hover:-translate-y-0.5 transition-all active:translate-y-0"
       >
         START
       </button>
