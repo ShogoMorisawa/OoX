@@ -72,15 +72,6 @@ export default function QuizScreen({
       {/* 背景オーバーレイ（テキストの可読性を保つため） */}
       <div className="absolute inset-0 bg-white/20" />
 
-      {/* --- 背景のエフェクト (変更なし) --- */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-20 -left-20 w-96 h-96 bg-sky-200/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 right-0 w-80 h-80 bg-pink-100/30 rounded-full blur-3xl" />
-        <span className="absolute left-10 top-3/4 w-4 h-4 rounded-full bg-white/40 animate-float-slow" />
-        <span className="absolute right-20 top-2/3 w-6 h-6 rounded-full bg-white/30 animate-float-medium" />
-        <span className="absolute left-1/3 bottom-10 w-3 h-3 rounded-full bg-white/50 animate-float-fast" />
-      </div>
-
       {/* --- メインコンテンツ --- */}
       <div className="relative z-10 flex flex-col items-center pt-8 pb-32 px-6 max-w-md mx-auto h-full min-h-screen justify-between">
         {/* 1. 質問バブル（上部） -> 画像に変更 */}

@@ -40,13 +40,7 @@ export default function StartScreen({ onStart }: Props) {
       {/* 背景オーバーレイ（テキストの可読性を保つため） */}
       <div className="absolute inset-0 bg-white/20" />
 
-      {/* 1. 背景の装飾（CSSで作る薄い光の玉） */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-10 top-32 w-32 h-32 rounded-full bg-sky-200 mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
-        <div className="absolute right-10 bottom-32 w-32 h-32 rounded-full bg-pink-200 mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-      </div>
-
-      {/* 2. タイトル */}
+      {/* タイトル */}
       <div className="relative z-10 mb-6 flex flex-col items-center">
         <h1
           className={`
@@ -71,7 +65,7 @@ export default function StartScreen({ onStart }: Props) {
         {/* おまけ：タイトルの下に小さな光の反射を入れるとガラスっぽくなります */}
         <div className="w-16 h-1 bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-50 blur-[1px] rounded-full mt-2 animate-pulse" />
       </div>
-      {/* 3. メインビジュアル（カプセルと細胞） */}
+      {/* メインビジュアル（カプセルと細胞） */}
       <div className="relative z-10 mb-10 w-[300px] h-[380px] flex items-center justify-center">
         {/* レイヤーA: カプセルの背後の光（ぼんやり光らせる） */}
         <div className="absolute inset-8 bg-sky-300/20 rounded-[4rem] blur-2xl" />
@@ -116,7 +110,7 @@ export default function StartScreen({ onStart }: Props) {
         </div>
       </div>
 
-      {/* 4. 説明文とボタン */}
+      {/* 説明文とボタン */}
       <p className="relative z-10 text-slate-500 text-sm md:text-base mb-8 tracking-wide font-medium">
         質問に答えてあなたのキャラを生み出そう！
       </p>
