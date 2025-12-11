@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { Quicksand } from "next/font/google";
 import { FunctionCode, Question } from "@/types/oox";
-import { CELL_COLORS } from "@/constants/cells";
 
 type Props = {
   questions: Question[];
@@ -62,32 +61,28 @@ export default function QuizScreen({
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden font-sans">
+    <div className="min-h-screen w-full relative overflow-hidden font-sans flex items-center justify-center py-10">
       {/* 背景画像 */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: "url(/images/oox_background.png)" }}
       />
+      {/* 背景オーバーレイ */}
+      <div className="absolute inset-0 bg-white/20 pointer-events-none" />
 
-      {/* 背景オーバーレイ（テキストの可読性を保つため） */}
-      <div className="absolute inset-0 bg-white/20" />
-
-      {/* --- メインコンテンツ --- */}
-      <div className="relative z-10 flex flex-col items-center pt-8 pb-32 px-6 max-w-md mx-auto h-full min-h-screen justify-between">
-        {/* 1. 質問バブル（上部） -> 画像に変更 */}
-        <div className="w-full animate-float-slow relative min-h-[12rem] flex items-center justify-center">
-          {/* ▼ 背景画像 (oox_quiz_question.png) */}
+      {/* --- コンテンツラッパー --- */}
+      <div className="relative z-10 w-full max-w-md px-6 flex flex-col items-center gap-6">
+        {/* 1. 質問バブル */}
+        <div className="w-full relative min-h-[12rem] flex items-center justify-center shrink-0">
           <div className="absolute inset-0 w-full h-full z-0 pointer-events-none drop-shadow-lg">
             <Image
               src="/images/oox_quiz_question.png"
               alt="Question bubble"
               fill
-              className="object-fill" // テキスト量に合わせて枠を引き伸ばす
+              className="object-fill"
               priority
             />
           </div>
-
-          {/* ▼ テキストコンテンツ (画像の上に重ねる) */}
           <div className="relative z-10 p-8 text-center pb-10">
             <p className="text-gray-500 text-xs font-bold tracking-widest mb-3 uppercase">
               Question {index + 1}
@@ -98,9 +93,9 @@ export default function QuizScreen({
           </div>
         </div>
 
-        {/* 2. 回答ボタンエリア（中部） -> 画像に変更 */}
-        <div className="w-full grid grid-cols-2 gap-4 mt-8">
-          {/* 左の選択肢 (A) */}
+        {/* 2. 回答ボタンエリア */}
+        <div className="w-full grid grid-cols-2 gap-4 shrink-0">
+          {/* 左 (A) */}
           <button
             onClick={() => handleSelect("left")}
             className={`
@@ -112,7 +107,6 @@ export default function QuizScreen({
               }
             `}
           >
-            {/* ▼ 背景画像 (oox_quiz_choice-lightBlue.png) */}
             <div className="absolute inset-0 w-full h-full z-0 rounded-[2.5rem] overflow-hidden drop-shadow-md">
               <Image
                 src="/images/oox_quiz_choice-lightBlue.png"
@@ -120,7 +114,6 @@ export default function QuizScreen({
                 fill
                 className="object-cover"
               />
-              {/* 選択時の色付きオーバーレイ（水色） */}
               <div
                 className={`absolute inset-0 bg-sky-500/20 mix-blend-overlay transition-opacity duration-300 ${
                   currentAnswer === currentQuestion.left
@@ -129,8 +122,6 @@ export default function QuizScreen({
                 }`}
               />
             </div>
-
-            {/* ▼ テキストコンテンツ */}
             <div className="relative z-10 flex flex-col items-center p-4">
               <span
                 className={`text-xl font-bold mb-2 ${quicksand.className} text-slate-700`}
@@ -143,7 +134,7 @@ export default function QuizScreen({
             </div>
           </button>
 
-          {/* 右の選択肢 (B) */}
+          {/* 右 (B) */}
           <button
             onClick={() => handleSelect("right")}
             className={`
@@ -155,15 +146,13 @@ export default function QuizScreen({
               }
             `}
           >
-            {/* ▼ 背景画像 (oox_quiz_choice-lightBlue.png) */}
             <div className="absolute inset-0 w-full h-full z-0 rounded-[2.5rem] overflow-hidden drop-shadow-md">
               <Image
-                src="/images/oox_quiz_choice-lightBlue.png" // とりあえず両方同じ水色の画像
+                src="/images/oox_quiz_choice-lightBlue.png"
                 alt="Choice B background"
                 fill
                 className="object-cover"
               />
-              {/* 選択時の色付きオーバーレイ（ピンク） */}
               <div
                 className={`absolute inset-0 bg-pink-500/20 mix-blend-overlay transition-opacity duration-300 ${
                   currentAnswer === currentQuestion.right
@@ -172,8 +161,6 @@ export default function QuizScreen({
                 }`}
               />
             </div>
-
-            {/* ▼ テキストコンテンツ */}
             <div className="relative z-10 flex flex-col items-center p-4">
               <span
                 className={`text-xl font-bold mb-2 ${quicksand.className} text-slate-700`}
@@ -187,8 +174,8 @@ export default function QuizScreen({
           </button>
         </div>
 
-        {/* ナビゲーションボタン (変更なし) */}
-        <div className="flex w-full justify-between items-center mt-6 px-2 relative z-20">
+        {/* ナビゲーションボタン */}
+        <div className="flex w-full justify-between items-center px-2 relative z-20 h-10 shrink-0">
           <button
             onClick={handlePrev}
             disabled={index === 0 || loading}
@@ -207,47 +194,48 @@ export default function QuizScreen({
             </button>
           )}
         </div>
-      </div>
 
-      {/* --- 3. 下部のシーン（ポッドと細胞） (変更なし) --- */}
-      <div className="absolute bottom-0 left-0 w-full h-48 flex justify-center items-end pb-4 pointer-events-none z-0">
-        {/* ... (細胞とポッドのコードは以前と同じ) ... */}
-        {/* 左の細胞（赤） */}
-        <div className="absolute left-[10%] bottom-16 w-20 h-20 animate-float-medium z-20">
-          <Image
-            src="/images/oox_start_cell-red.png"
-            alt="Red Cell"
-            width={100}
-            height={100}
-            className="object-contain drop-shadow-xl"
-          />
-        </div>
-        {/* 右の細胞（青） */}
-        <div className="absolute right-[10%] bottom-24 w-20 h-20 animate-float-fast z-20">
-          <Image
-            src="/images/oox_start_cell-lightBlue.png"
-            alt="Blue Cell"
-            width={80}
-            height={80}
-            className="object-contain drop-shadow-xl"
-          />
-        </div>
-        {/* 中央のポッド（水位計） */}
-        <div className="relative z-10 w-32 h-40 flex items-end justify-center">
-          <div
-            className="absolute bottom-2 w-[80%] bg-sky-300/40 rounded-b-[2rem] overflow-hidden transition-all duration-1000 ease-in-out"
-            style={{ height: `${20 + progress * 70}%` }}
-          >
-            <div className="absolute top-0 left-0 w-[200%] h-4 bg-sky-200/50 animate-wave opacity-70" />
-            <div className="w-full h-full bg-gradient-to-t from-sky-400/30 to-sky-100/10" />
-          </div>
-          <div className="absolute inset-0 w-full h-full">
+        {/* 3. 下部のシーン（ポッドと細胞） */}
+        <div className="relative w-full h-40 mt-4 flex justify-center items-end shrink-0">
+          {/* 左の細胞（赤） */}
+          <div className="absolute left-4 bottom-8 w-20 h-20 animate-float-medium z-20">
             <Image
-              src="/images/oox_start_pod.png"
-              alt="Pod"
-              fill
-              className="object-contain opacity-90"
+              src="/images/oox_start_cell-red.png"
+              alt="Red Cell"
+              width={100}
+              height={100}
+              className="object-contain drop-shadow-xl"
             />
+          </div>
+
+          {/* 右の細胞（青） */}
+          <div className="absolute right-4 bottom-12 w-20 h-20 animate-float-fast z-20">
+            <Image
+              src="/images/oox_start_cell-lightBlue.png"
+              alt="Blue Cell"
+              width={80}
+              height={80}
+              className="object-contain drop-shadow-xl"
+            />
+          </div>
+
+          {/* 中央のポッド（水位計） */}
+          <div className="relative z-10 w-32 h-40 flex items-end justify-center">
+            <div
+              className="absolute bottom-2 w-[80%] bg-sky-300/40 rounded-b-[2rem] overflow-hidden transition-all duration-1000 ease-in-out"
+              style={{ height: `${20 + progress * 70}%` }}
+            >
+              <div className="absolute top-0 left-0 w-[200%] h-4 bg-sky-200/50 animate-wave opacity-70" />
+              <div className="w-full h-full bg-gradient-to-t from-sky-400/30 to-sky-100/10" />
+            </div>
+            <div className="absolute inset-0 w-full h-full">
+              <Image
+                src="/images/oox_start_pod.png"
+                alt="Pod"
+                fill
+                className="object-contain opacity-90"
+              />
+            </div>
           </div>
         </div>
       </div>
