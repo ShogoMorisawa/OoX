@@ -87,20 +87,32 @@ export const useOoX = () => {
     setResolvedBlock([]);
 
     // 開発用: 固定値で葛藤を発生させる
-    // 構造: Ni(王) -> [Fe, Fi, Te](葛藤ブロック) -> Si(部下)
+    // 構造: Ni(王) -> [Fe, Fi, Te](葛藤ブロック) -> [Ti, Ne, Si](葛藤ブロック) -> Se
+    // Ni から両ブロックへ支配エッジを張り、Fe→Ti でブロック間の順序を固定、Ti→Se で Se を最後に
     const matches = [
-      // 王からの支配
-      { id: "dev1", winner: "Ni" as FunctionCode, loser: "Fe" as FunctionCode },
-      // 葛藤ブロック (Fe > Fi > Te > Fe のサイクル)
-      { id: "dev2", winner: "Fe" as FunctionCode, loser: "Fi" as FunctionCode },
-      { id: "dev3", winner: "Fi" as FunctionCode, loser: "Te" as FunctionCode },
-      { id: "dev4", winner: "Te" as FunctionCode, loser: "Fe" as FunctionCode },
-      // 葛藤ブロック (Ti > Ne > Si > Ti のサイクル)
-      { id: "dev5", winner: "Ti" as FunctionCode, loser: "Ne" as FunctionCode },
-      { id: "dev6", winner: "Ne" as FunctionCode, loser: "Si" as FunctionCode },
-      { id: "dev7", winner: "Si" as FunctionCode, loser: "Ti" as FunctionCode },
-      // ブロックからの支配
-      { id: "dev8", winner: "Ni" as FunctionCode, loser: "Se" as FunctionCode },
+      // Ni から各ブロックへ
+      { id: "dev1", winner: "Ni", loser: "Fe" },
+      { id: "dev2", winner: "Ni", loser: "Fi" },
+      { id: "dev3", winner: "Ni", loser: "Te" },
+      { id: "dev4", winner: "Ni", loser: "Ti" },
+      { id: "dev5", winner: "Ni", loser: "Ne" },
+      { id: "dev6", winner: "Ni", loser: "Si" },
+
+      // 葛藤ブロック (Fe > Fi > Te > Fe)
+      { id: "dev7", winner: "Fe", loser: "Fi" },
+      { id: "dev8", winner: "Fi", loser: "Te" },
+      { id: "dev9", winner: "Te", loser: "Fe" },
+
+      // ブロック間の順序を固定 (Fe -> Ti)
+      { id: "dev10", winner: "Fe", loser: "Ti" },
+
+      // 葛藤ブロック (Ti > Ne > Si > Ti)
+      { id: "dev11", winner: "Ti", loser: "Ne" },
+      { id: "dev12", winner: "Ne", loser: "Si" },
+      { id: "dev13", winner: "Si", loser: "Ti" },
+
+      // 最後に Se をぶら下げる
+      { id: "dev14", winner: "Ti", loser: "Se" },
     ];
 
     // 元の実装（コメントアウト）
