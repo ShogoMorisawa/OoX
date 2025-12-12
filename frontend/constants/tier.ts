@@ -4,5 +4,3 @@ export const OOX_TIER = {
   MIDDLE: "Middle",
   LOW: "Low",
 } as const;
-
-export type Tier = (typeof OOX_TIER)[keyof typeof OOX_TIER];

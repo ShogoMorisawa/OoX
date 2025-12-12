@@ -28,3 +28,9 @@ export type Question = {
   right: FunctionCode;
   text: string;
 };
+
+// ステップ型（constants/steps.ts の OOX_STEPS から導出）
+export type Step = "start" | "quiz" | "resolve" | "hierarchy" | "result";
+
+// 階層型（constants/tier.ts の OOX_TIER から導出）
+export type Tier = "Dominant" | "High" | "Middle" | "Low";

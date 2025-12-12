@@ -5,5 +5,3 @@ export const OOX_STEPS = {
   HIERARCHY: "hierarchy",
   RESULT: "result",
 } as const;
-
-export type Step = (typeof OOX_STEPS)[keyof typeof OOX_STEPS];

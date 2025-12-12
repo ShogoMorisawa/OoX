@@ -5,10 +5,12 @@ import {
   OrderElement,
   CalculateResponse,
   DescribeResponse,
+  Step,
+  Tier,
   // Question, // 開発用でコメントアウト中
 } from "@/types/oox";
-import { OOX_STEPS, Step } from "@/constants/steps";
-import { OOX_TIER, Tier } from "@/constants/tier";
+import { OOX_STEPS } from "@/constants/steps";
+import { OOX_TIER } from "@/constants/tier";
 // import { QUESTIONS } from "@/constants/questions"; // 開発用でコメントアウト中
 import { API_BASE_URL } from "@/constants/api";
 

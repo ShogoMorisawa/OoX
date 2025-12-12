@@ -2,8 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FunctionCode, CalculateResponse } from "@/types/oox";
-import { Tier } from "@/constants/tier";
+import { FunctionCode, CalculateResponse, Tier } from "@/types/oox";
 
 type Props = {
   calculateResult: CalculateResponse;

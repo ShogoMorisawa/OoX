@@ -2,8 +2,8 @@
 "use client";
 
 import Image from "next/image";
-import { FunctionCode, CalculateResponse } from "@/types/oox";
-import { Tier, OOX_TIER } from "@/constants/tier";
+import { FunctionCode, CalculateResponse, Tier } from "@/types/oox";
+import { OOX_TIER } from "@/constants/tier";
 
 type Props = {
   calculateResult: CalculateResponse;
