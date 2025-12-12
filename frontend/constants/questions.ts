@@ -6,8 +6,6 @@ import { Question, isOrderQuestion, isHealthQuestion } from "@/types/oox";
  * - health質問: 各choiceに effect.health が必須
  */
 function validateQuestions(questions: Question[]): void {
-  if (process.env.NODE_ENV === "production") return;
-
   const errors: string[] = [];
 
   for (const q of questions) {
@@ -96,4 +94,6 @@ export const QUESTIONS: Question[] = [
 ];
 
 // 開発時にデータ不整合をチェック
-validateQuestions(QUESTIONS);
+if (process.env.NODE_ENV !== "production") {
+  validateQuestions(QUESTIONS);
+}
