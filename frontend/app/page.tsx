@@ -21,12 +21,15 @@ export default function Home() {
     loadingMessage,
     conflictBlock,
     resolvedBlock,
+    tierMap,
     handleStart,
     handleChange,
     handleSelectOrder,
     handleResetConflict,
     handleConfirmConflict,
     handleCalculate,
+    handleUpdateTier,
+    handleConfirmHierarchy,
     handleDescribe,
     handleRestart,
   } = useOoX();
@@ -69,8 +72,17 @@ export default function Home() {
   }
 
   // 階層決定画面
-  if (step === OOX_STEPS.HIERARCHY) {
-    return <HierarchyScreen />;
+  if (step === OOX_STEPS.HIERARCHY && calculateResult) {
+    return (
+      <HierarchyScreen
+        calculateResult={calculateResult}
+        tierMap={tierMap}
+        loading={loading}
+        loadingMessage={loadingMessage}
+        onUpdateTier={handleUpdateTier}
+        onConfirmHierarchy={handleConfirmHierarchy}
+      />
+    );
   }
 
   // 結果画面
