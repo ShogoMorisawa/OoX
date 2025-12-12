@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   FunctionCode,
@@ -7,127 +7,197 @@ import {
   DescribeResponse,
   Step,
   Tier,
-  // Question, // 開発用でコメントアウト中
+  Question,
+  Choice,
+  isOrderQuestion,
+  isHealthQuestion,
 } from "@/types/oox";
+
 import { OOX_STEPS } from "@/constants/steps";
 import { OOX_TIER } from "@/constants/tier";
-// import { QUESTIONS } from "@/constants/questions"; // 開発用でコメントアウト中
+import { QUESTIONS } from "@/constants/questions";
 import { API_BASE_URL } from "@/constants/api";
+
+type ChoiceId = Choice["id"]; // "A" | "B" | "C"
+
+type Match = {
+  id: string;
+  winner: FunctionCode;
+  loser: FunctionCode;
+};
+
+function findChoice(
+  question: Question,
+  choiceId: ChoiceId
+): Choice | undefined {
+  return question.choices.find((c) => c.id === choiceId);
+}
+
+/**
+ * health質問の 0/1 を集計して O/o/x に落とす
+ * - ratio >= 0.67 -> "O"
+ * - ratio >= 0.34 -> "o"
+ * - else -> "x"
+ */
+function toHealthStatus(sum: number, count: number): "O" | "o" | "x" {
+  if (count <= 0) return "o";
+  const ratio = sum / count;
+  if (ratio >= 0.67) return "O";
+  if (ratio >= 0.34) return "o";
+  return "x";
+}
 
 export const useOoX = () => {
   // --- State ---
-  const [step, setStep] = useState<Step>(OOX_STEPS.START); // 画面切り替え用
+  const [step, setStep] = useState<Step>(OOX_STEPS.START);
 
-  const [answers, setAnswers] = useState<Record<string, FunctionCode>>({});
+  // answers は「質問id -> 選んだ選択肢id」
+  const [answers, setAnswers] = useState<Record<string, ChoiceId>>({});
 
   const [calculateResult, setCalculateResult] =
     useState<CalculateResponse | null>(null);
+
   const [tierMap, setTierMap] = useState<Partial<Record<FunctionCode, Tier>>>(
     {}
   );
+
   const [describeResult, setDescribeResult] = useState<DescribeResponse | null>(
     null
   );
 
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+
   const [conflictBlock, setConflictBlock] = useState<FunctionCode[]>([]);
   const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
 
+  // --- Derived (optional) ---
+  // healthStatus を Quiz回答から作る（Describeで使う）
+  const quizHealthStatus = useMemo(() => {
+    const sums: Record<FunctionCode, number> = {
+      Ni: 0,
+      Ne: 0,
+      Ti: 0,
+      Te: 0,
+      Fi: 0,
+      Fe: 0,
+      Si: 0,
+      Se: 0,
+    };
+    const counts: Record<FunctionCode, number> = {
+      Ni: 0,
+      Ne: 0,
+      Ti: 0,
+      Te: 0,
+      Fi: 0,
+      Fe: 0,
+      Si: 0,
+      Se: 0,
+    };
+
+    for (const q of QUESTIONS) {
+      if (!isHealthQuestion(q)) continue;
+
+      const a = answers[q.id];
+      if (!a) continue;
+
+      const choice = findChoice(q, a);
+      const v = choice?.effect?.health;
+      if (v === 0 || v === 1) {
+        sums[q.target] += v;
+        counts[q.target] += 1;
+      }
+    }
+
+    const healthStatus: Record<FunctionCode, "O" | "o" | "x"> = {
+      Ni: toHealthStatus(sums.Ni, counts.Ni),
+      Ne: toHealthStatus(sums.Ne, counts.Ne),
+      Ti: toHealthStatus(sums.Ti, counts.Ti),
+      Te: toHealthStatus(sums.Te, counts.Te),
+      Fi: toHealthStatus(sums.Fi, counts.Fi),
+      Fe: toHealthStatus(sums.Fe, counts.Fe),
+      Si: toHealthStatus(sums.Si, counts.Si),
+      Se: toHealthStatus(sums.Se, counts.Se),
+    };
+
+    return healthStatus;
+  }, [answers]);
+
   // --- Handlers ---
-  // スタートボタンを押した時の処理
   const handleStart = () => {
     setStep(OOX_STEPS.QUIZ);
   };
 
-  // 回答を変更したときの処理
-  const handleChange = (id: string, value: FunctionCode) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
+  // Quiz: 回答を変更（questionId -> choiceId）
+  const handleChange = (id: string, choiceId: ChoiceId) => {
+    setAnswers((prev) => ({ ...prev, [id]: choiceId }));
   };
 
-  // 選択肢をクリックしたときの処理
+  // Resolve: クリックで順序確定（葛藤ブロック内）
   const handleSelectOrder = (func: FunctionCode) => {
     if (resolvedBlock.includes(func)) return;
     setResolvedBlock([...resolvedBlock, func]);
   };
 
-  // 葛藤解決画面でリセットボタンを押したときの処理
   const handleResetConflict = () => {
     setResolvedBlock([]);
   };
 
-  // 葛藤解決画面で決定ボタンを押したときの処理
   const handleConfirmConflict = async () => {
     if (!calculateResult) return;
 
-    // 今の order をコピー
     const newOrder = [...calculateResult.order];
-
-    // 現在の葛藤箇所に resolvedBlock を埋め込む
     const conflictIndex = newOrder.findIndex((el) => Array.isArray(el));
 
     if (conflictIndex !== -1) {
       newOrder.splice(conflictIndex, 1, ...resolvedBlock);
 
-      // 状態更新
       setCalculateResult({ ...calculateResult, order: newOrder });
       setResolvedBlock([]);
 
-      // 次の葛藤を探す
       const nextConflictIndex = newOrder.findIndex((el) => Array.isArray(el));
       if (nextConflictIndex !== -1) {
         const block = newOrder[nextConflictIndex] as FunctionCode[];
         setConflictBlock(block);
       } else {
-        // 全て解決したら 葛藤解決画面へ
         setStep(OOX_STEPS.HIERARCHY);
       }
     }
   };
 
-  // 序列を計算する (/api/calculate)
+  // ✅ Quiz回答から matches を生成（order質問のみ）
+  const buildMatchesFromAnswers = (): Match[] => {
+    const matches: Match[] = [];
+
+    for (const q of QUESTIONS) {
+      if (!isOrderQuestion(q)) continue;
+
+      const choiceId = answers[q.id];
+      if (!choiceId) continue; // 未回答は飛ばす（本番はバリデーションしてもOK）
+
+      const choice = findChoice(q, choiceId);
+      if (!choice?.winner || !choice?.loser) {
+        // order質問なのに winner/loser が無いのはデータ不整合
+        continue;
+      }
+
+      matches.push({
+        id: q.id,
+        winner: choice.winner,
+        loser: choice.loser,
+      });
+    }
+
+    return matches;
+  };
+
   const handleCalculate = async () => {
     setLoading(true);
     setLoadingMessage("思考回路を解析中...");
     setCalculateResult(null);
     setResolvedBlock([]);
 
-    // 開発用: 固定値で葛藤を発生させる
-    // 構造: Ni(王) -> [Fe, Fi, Te](葛藤ブロック) -> [Ti, Ne, Si](葛藤ブロック) -> Se
-    // Ni から両ブロックへ支配エッジを張り、Fe→Ti でブロック間の順序を固定、Ti→Se で Se を最後に
-    const matches = [
-      // Ni から各ブロックへ
-      { id: "dev1", winner: "Ni", loser: "Fe" },
-      { id: "dev2", winner: "Ni", loser: "Fi" },
-      { id: "dev3", winner: "Ni", loser: "Te" },
-      { id: "dev4", winner: "Ni", loser: "Ti" },
-      { id: "dev5", winner: "Ni", loser: "Ne" },
-      { id: "dev6", winner: "Ni", loser: "Si" },
-
-      // 葛藤ブロック (Fe > Fi > Te > Fe)
-      { id: "dev7", winner: "Fe", loser: "Fi" },
-      { id: "dev8", winner: "Fi", loser: "Te" },
-      { id: "dev9", winner: "Te", loser: "Fe" },
-
-      // ブロック間の順序を固定 (Fe -> Ti)
-      { id: "dev10", winner: "Fe", loser: "Ti" },
-
-      // 葛藤ブロック (Ti > Ne > Si > Ti)
-      { id: "dev11", winner: "Ti", loser: "Ne" },
-      { id: "dev12", winner: "Ne", loser: "Si" },
-      { id: "dev13", winner: "Si", loser: "Ti" },
-
-      // 最後に Se をぶら下げる
-      { id: "dev14", winner: "Ti", loser: "Se" },
-    ];
-
-    // 元の実装（コメントアウト）
-    // const matches = QUESTIONS.map((q: Question) => ({
-    //   id: q.id,
-    //   winner: answers[q.id],
-    //   loser: answers[q.id] === q.left ? q.right : q.left,
-    // }));
-
+    const matches = buildMatchesFromAnswers();
     const url = `${API_BASE_URL}/api/calculate`;
     const requestBody = { matches };
 
@@ -150,18 +220,17 @@ export const useOoX = () => {
       const data: CalculateResponse = await res.json();
       setCalculateResult(data);
 
-      // 葛藤ブロック（配列）があるか探す
+      // conflict check
       const conflictIndex = data.order.findIndex((el) => Array.isArray(el));
       const hasConflict = conflictIndex !== -1;
 
       if (hasConflict) {
         const block = data.order[conflictIndex] as FunctionCode[];
         setConflictBlock(block);
-        setStep(OOX_STEPS.RESOLVE); // 解決画面へ
-        setLoading(false); // 一旦ロード解除
+        setStep(OOX_STEPS.RESOLVE);
+        setLoading(false);
       } else {
-        // 葛藤がなければそのまま分析へ
-        await handleDescribe(data.order);
+        await handleDescribe(data.order, tierMap, data.health);
       }
     } catch (e) {
       console.error("Calculate API Error:", e);
@@ -174,18 +243,19 @@ export const useOoX = () => {
     }
   };
 
-  // 階層を変更する
   const handleUpdateTier = (func: FunctionCode, tier: Tier) => {
     setTierMap((prev) => ({ ...prev, [func]: tier }));
   };
 
-  // 階層を決定する
   const handleConfirmHierarchy = async () => {
     if (!calculateResult) return;
-    await handleDescribe(calculateResult.order, tierMap);
+    await handleDescribe(
+      calculateResult.order,
+      tierMap,
+      calculateResult.health
+    );
   };
 
-  // 再スタート処理
   const handleRestart = () => {
     setStep(OOX_STEPS.START);
     setAnswers({});
@@ -196,36 +266,31 @@ export const useOoX = () => {
     setResolvedBlock([]);
   };
 
-  // Geminiに分析してもらう (/api/describe)
+  // ✅ Describe: healthStatus は calculateResult.health を優先して使う
+  // （今後、healthをサーバーで出す/クライアントで出す、どっちでも対応できる形）
   const handleDescribe = async (
     rawOrder: OrderElement[],
-    userTierMap?: Partial<Record<FunctionCode, Tier>>
+    userTierMap?: Partial<Record<FunctionCode, Tier>>,
+    healthFromCalc?: Record<FunctionCode, "O" | "o" | "x">
   ) => {
     setLoading(true);
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
-    // 1. データを整形
     const finalOrder = rawOrder.flat() as FunctionCode[];
 
-    // 2. 健全度と階層を設定
-    // tierMap は引数で受け取ったものを使う、なければ自動生成
-    const healthStatus: Record<string, string> = {};
+    // healthStatus: サーバーの結果があればそれ、無ければQuiz集計を使う
+    const healthStatus = healthFromCalc ?? quizHealthStatus;
+
+    // tierMap: ユーザー指定があればそれ、無ければ順位から自動割り当て
     const tierMapForApi: Partial<Record<FunctionCode, Tier>> = {};
-
     finalOrder.forEach((func, index) => {
-      // 健全度を自動生成 (MVP用: 仮データ)
-      // 本当はユーザーが回答したり設定したりする
-      healthStatus[func] = index % 3 === 0 ? "O" : index % 3 === 1 ? "o" : "x";
-
-      // 階層: ユーザーが設定したものがあればそれを使う、なければ自動割り当て
       if (userTierMap && userTierMap[func]) {
         tierMapForApi[func] = userTierMap[func];
       } else {
-        // 自動割り当て
-        if (index < 2) tierMapForApi[func] = OOX_TIER.DOMINANT; // 1-2位
-        else if (index < 4) tierMapForApi[func] = OOX_TIER.HIGH; // 3-4位
-        else if (index < 6) tierMapForApi[func] = OOX_TIER.MIDDLE; // 5-6位
-        else tierMapForApi[func] = OOX_TIER.LOW; // 7-8位
+        if (index < 2) tierMapForApi[func] = OOX_TIER.DOMINANT;
+        else if (index < 4) tierMapForApi[func] = OOX_TIER.HIGH;
+        else if (index < 6) tierMapForApi[func] = OOX_TIER.MIDDLE;
+        else tierMapForApi[func] = OOX_TIER.LOW;
       }
     });
 
@@ -250,7 +315,7 @@ export const useOoX = () => {
 
       const data: DescribeResponse = await res.json();
       setDescribeResult(data);
-      setStep(OOX_STEPS.RESULT); // 結果画面へ移動
+      setStep(OOX_STEPS.RESULT);
     } catch (e) {
       console.error("Describe API Error:", e);
       const errorMessage =

@@ -1,4 +1,45 @@
-import { Question } from "@/types/oox";
+import { Question, isOrderQuestion, isHealthQuestion } from "@/types/oox";
+
+/**
+ * QUESTIONS のデータ不整合をチェック（開発時のみ）
+ * - order質問: 各choiceに winner/loser が必須
+ * - health質問: 各choiceに effect.health が必須
+ */
+function validateQuestions(questions: Question[]): void {
+  if (process.env.NODE_ENV === "production") return;
+
+  const errors: string[] = [];
+
+  for (const q of questions) {
+    if (isOrderQuestion(q)) {
+      for (const choice of q.choices) {
+        if (!choice.winner || !choice.loser) {
+          errors.push(
+            `[${q.id}] order質問のchoice "${choice.id}" に winner/loser がありません`
+          );
+        }
+        if (choice.winner && choice.loser && choice.winner === choice.loser) {
+          errors.push(
+            `[${q.id}] order質問のchoice "${choice.id}" で winner と loser が同じです`
+          );
+        }
+      }
+    } else if (isHealthQuestion(q)) {
+      for (const choice of q.choices) {
+        if (choice.effect?.health === undefined) {
+          errors.push(
+            `[${q.id}] health質問のchoice "${choice.id}" に effect.health がありません`
+          );
+        }
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error("QUESTIONS データ不整合:", errors);
+    throw new Error(`QUESTIONS データ不整合: ${errors.join(", ")}`);
+  }
+}
 
 export const QUESTIONS: Question[] = [
   // Order質問の例
@@ -53,3 +94,6 @@ export const QUESTIONS: Question[] = [
   //   ],
   // },
 ];
+
+// 開発時にデータ不整合をチェック
+validateQuestions(QUESTIONS);
