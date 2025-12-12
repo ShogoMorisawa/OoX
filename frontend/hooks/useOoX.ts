@@ -77,8 +77,8 @@ export const useOoX = () => {
         const block = newOrder[nextConflictIndex] as FunctionCode[];
         setConflictBlock(block);
       } else {
-        // 全て解決したら Describe へ
-        await handleDescribe(newOrder as FunctionCode[]);
+        // 全て解決したら 葛藤解決画面へ
+        setStep(OOX_STEPS.HIERARCHY);
       }
     }
   };
@@ -159,7 +159,7 @@ export const useOoX = () => {
         setLoading(false); // 一旦ロード解除
       } else {
         // 葛藤がなければそのまま分析へ
-        await handleDescribe(data.order as FunctionCode[]);
+        await handleDescribe(data.order);
       }
     } catch (e) {
       console.error("Calculate API Error:", e);
@@ -172,43 +172,63 @@ export const useOoX = () => {
     }
   };
 
+  // 階層を変更する
+  const handleUpdateTier = (func: FunctionCode, tier: Tier) => {
+    setTierMap((prev) => ({ ...prev, [func]: tier }));
+  };
+
+  // 階層を決定する
+  const handleConfirmHierarchy = async () => {
+    if (!calculateResult) return;
+    await handleDescribe(calculateResult.order, tierMap);
+  };
+
   // 再スタート処理
   const handleRestart = () => {
-    setStep(OOX_STEPS.QUIZ);
-    // 必要なら answers などをリセットする処理もここに追加
+    setStep(OOX_STEPS.START);
     setAnswers({});
     setCalculateResult(null);
+    setTierMap({});
     setDescribeResult(null);
     setConflictBlock([]);
     setResolvedBlock([]);
   };
 
   // Geminiに分析してもらう (/api/describe)
-  const handleDescribe = async (rawOrder: OrderElement[]) => {
+  const handleDescribe = async (
+    rawOrder: OrderElement[],
+    userTierMap?: Partial<Record<FunctionCode, Tier>>
+  ) => {
     setLoading(true);
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
     // 1. データを整形
     const finalOrder = rawOrder.flat() as FunctionCode[];
 
-    // 2. 健全度と階層を自動生成 (MVP用: 仮データ)
-    // 本当はユーザーが回答したり設定したりする
+    // 2. 健全度と階層を設定
+    // tierMap は引数で受け取ったものを使う、なければ自動生成
     const healthStatus: Record<string, string> = {};
-    const tierMap: Record<string, string> = {};
+    const tierMapForApi: Partial<Record<FunctionCode, Tier>> = {};
 
     finalOrder.forEach((func, index) => {
-      // 健全度をランダムっぽく設定
+      // 健全度を自動生成 (MVP用: 仮データ)
+      // 本当はユーザーが回答したり設定したりする
       healthStatus[func] = index % 3 === 0 ? "O" : index % 3 === 1 ? "o" : "x";
 
-      // 階層を順位に基づいて自動割り当て
-      if (index < 2) tierMap[func] = "Dominant"; // 1-2位
-      else if (index < 4) tierMap[func] = "High"; // 3-4位
-      else if (index < 6) tierMap[func] = "Middle"; // 5-6位
-      else tierMap[func] = "Low"; // 7-8位
+      // 階層: ユーザーが設定したものがあればそれを使う、なければ自動割り当て
+      if (userTierMap && userTierMap[func]) {
+        tierMapForApi[func] = userTierMap[func];
+      } else {
+        // 自動割り当て
+        if (index < 2) tierMapForApi[func] = OOX_TIER.DOMINANT; // 1-2位
+        else if (index < 4) tierMapForApi[func] = OOX_TIER.HIGH; // 3-4位
+        else if (index < 6) tierMapForApi[func] = OOX_TIER.MIDDLE; // 5-6位
+        else tierMapForApi[func] = OOX_TIER.LOW; // 7-8位
+      }
     });
 
     const url = `${API_BASE_URL}/api/describe`;
-    const requestBody = { finalOrder, healthStatus, tierMap };
+    const requestBody = { finalOrder, healthStatus, tierMap: tierMapForApi };
 
     try {
       console.log("Describe API Request:", { url, body: requestBody });
@@ -250,12 +270,15 @@ export const useOoX = () => {
     loadingMessage,
     conflictBlock,
     resolvedBlock,
+    tierMap,
     handleStart,
     handleChange,
     handleSelectOrder,
     handleResetConflict,
     handleConfirmConflict,
     handleCalculate,
+    handleUpdateTier,
+    handleConfirmHierarchy,
     handleDescribe,
     handleRestart,
   };
