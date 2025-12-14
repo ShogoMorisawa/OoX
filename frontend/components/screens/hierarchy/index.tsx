@@ -81,26 +81,19 @@ export default function HierarchyScreenContainer({
     });
   }, [finalOrder, onUpdateTier, tierMap]);
 
-  const [selected, setSelected] = useState<FunctionCode | null>(null);
-
-  useEffect(() => {
-    if (!finalOrder.length) {
-      setSelected(null);
-      return;
-    }
-
-    setSelected((prev) => {
-      if (prev && finalOrder.includes(prev)) return prev;
-      return finalOrder[0];
-    });
-  }, [finalOrder]);
+  const [rawSelected, setRawSelected] = useState<FunctionCode | null>(null);
+  const selected = useMemo(() => {
+    if (!finalOrder.length) return null;
+    if (rawSelected && finalOrder.includes(rawSelected)) return rawSelected;
+    return finalOrder[0];
+  }, [finalOrder, rawSelected]);
 
   const viewProps: HierarchyViewProps = {
     finalOrder,
     healthStatus,
     tierMap: tierMapWithDefaults,
     selected,
-    onSelect: setSelected,
+    onSelect: setRawSelected,
     onUpdateTier,
     onConfirm: onConfirmHierarchy,
     loading,
