@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 import {
   FunctionCode,
@@ -9,16 +10,14 @@ import {
   Tier,
   Question,
   Choice,
-  isOrderQuestion,
-  isHealthQuestion,
+  SupabaseChoice,
 } from "@/types/oox";
 
 import { OOX_STEPS } from "@/constants/steps";
 import { OOX_TIER } from "@/constants/tier";
-import { QUESTIONS } from "@/constants/questions";
 import { API_BASE_URL } from "@/constants/api";
 
-type ChoiceId = Choice["id"]; // "A" | "B" | "C"
+type ChoiceId = Choice["id"]; // "A" | "B"
 
 type Match = {
   id: string;
@@ -26,19 +25,16 @@ type Match = {
   loser: FunctionCode;
 };
 
+// ... (findChoice, toHealthStatus 関数は変更なし)
 function findChoice(
-  question: Question,
+  questions: Question[],
+  questionId: string,
   choiceId: ChoiceId
 ): Choice | undefined {
-  return question.choices.find((c) => c.id === choiceId);
+  const q = questions.find((q) => q.id === questionId);
+  return q?.choices.find((c) => c.id === choiceId);
 }
 
-/**
- * health質問の 0/1 を集計して O/o/x に落とす
- * - ratio >= 0.67 -> "O"
- * - ratio >= 0.34 -> "o"
- * - else -> "x"
- */
 function toHealthStatus(sum: number, count: number): "O" | "o" | "x" {
   if (count <= 0) return "o";
   const ratio = sum / count;
@@ -50,29 +46,77 @@ function toHealthStatus(sum: number, count: number): "O" | "o" | "x" {
 export const useOoX = () => {
   // --- State ---
   const [step, setStep] = useState<Step>(OOX_STEPS.START);
-
-  // answers は「質問id -> 選んだ選択肢id」
   const [answers, setAnswers] = useState<Record<string, ChoiceId>>({});
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(true);
 
   const [calculateResult, setCalculateResult] =
     useState<CalculateResponse | null>(null);
-
   const [tierMap, setTierMap] = useState<Partial<Record<FunctionCode, Tier>>>(
     {}
   );
-
   const [describeResult, setDescribeResult] = useState<DescribeResponse | null>(
     null
   );
-
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-
   const [conflictBlock, setConflictBlock] = useState<FunctionCode[]>([]);
   const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
 
-  // --- Derived (optional) ---
-  // healthStatus を Quiz回答から作る（Describeで使う）
+  // --- Effect: Supabaseから質問を取得 ---
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setLoadingQuestions(true);
+
+        const { data, error } = await supabase
+          .from("questions")
+          .select(
+            `
+            *,
+            choices (*)
+          `
+          )
+          .order("display_order", { ascending: true });
+
+        if (error) throw error;
+
+        if (data) {
+          const formattedQuestions: Question[] = data.map((q) => ({
+            id: q.question_id,
+            questionId: q.question_id,
+            kind: q.kind,
+            text: q.text,
+            functionPair: q.function_pair,
+            targetFunction: q.target_function,
+            displayOrder: q.display_order,
+            choices: (q.choices as SupabaseChoice[])
+              .sort((a, b) => a.choice_id.localeCompare(b.choice_id))
+              .map((c) => ({
+                id: c.choice_id,
+                choiceId: c.choice_id,
+                questionId: q.question_id,
+                text: c.text,
+                relatedFunction: c.related_function,
+                healthScore: c.health_score ?? 0,
+              })),
+          }));
+
+          setQuestions(formattedQuestions);
+        }
+      } catch (e) {
+        console.error("質問データの取得に失敗:", e);
+        alert("質問データの読み込みに失敗しました。");
+      } finally {
+        setLoadingQuestions(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
+  // --- Derived: HealthStatus計算 ---
   const quizHealthStatus = useMemo(() => {
     const sums: Record<FunctionCode, number> = {
       Ni: 0,
@@ -95,17 +139,19 @@ export const useOoX = () => {
       Se: 0,
     };
 
-    for (const q of QUESTIONS) {
-      if (!isHealthQuestion(q)) continue;
+    for (const q of questions) {
+      // ★修正: isHealthQuestion関数を使わず kind で判定
+      if (q.kind !== "health") continue;
+
+      if (!q.targetFunction) continue;
 
       const a = answers[q.id];
       if (!a) continue;
 
-      const choice = findChoice(q, a);
-      const v = choice?.effect?.health;
-      if (v === 0 || v === 1) {
-        sums[q.target] += v;
-        counts[q.target] += 1;
+      const choice = q.choices.find((c) => c.id === a);
+      if (choice) {
+        sums[q.targetFunction] += choice.healthScore;
+        counts[q.targetFunction] += 1;
       }
     }
 
@@ -121,19 +167,17 @@ export const useOoX = () => {
     };
 
     return healthStatus;
-  }, [answers]);
+  }, [answers, questions]);
 
   // --- Handlers ---
   const handleStart = () => {
     setStep(OOX_STEPS.QUIZ);
   };
 
-  // Quiz: 回答を変更（questionId -> choiceId）
   const handleChange = (id: string, choiceId: ChoiceId) => {
     setAnswers((prev) => ({ ...prev, [id]: choiceId }));
   };
 
-  // Resolve: クリックで順序確定（葛藤ブロック内）
   const handleSelectOrder = (func: FunctionCode) => {
     if (resolvedBlock.includes(func)) return;
     setResolvedBlock([...resolvedBlock, func]);
@@ -165,27 +209,30 @@ export const useOoX = () => {
     }
   };
 
-  // ✅ Quiz回答から matches を生成（order質問のみ）
   const buildMatchesFromAnswers = (): Match[] => {
     const matches: Match[] = [];
 
-    for (const q of QUESTIONS) {
-      if (!isOrderQuestion(q)) continue;
+    for (const q of questions) {
+      // ★修正: isOrderQuestion関数を使わず kind で判定
+      if (q.kind !== "order") continue;
 
       const choiceId = answers[q.id];
-      if (!choiceId) continue; // 未回答は飛ばす（本番はバリデーションしてもOK）
+      if (!choiceId) continue;
 
-      const choice = findChoice(q, choiceId);
-      if (!choice?.winner || !choice?.loser) {
-        // order質問なのに winner/loser が無いのはデータ不整合
-        continue;
+      const choice = q.choices.find((c) => c.id === choiceId);
+
+      if (choice && choice.relatedFunction && q.functionPair) {
+        const winner = choice.relatedFunction;
+        const loser = q.functionPair.find((f) => f !== winner);
+
+        if (loser) {
+          matches.push({
+            id: q.id,
+            winner: winner,
+            loser: loser,
+          });
+        }
       }
-
-      matches.push({
-        id: q.id,
-        winner: choice.winner,
-        loser: choice.loser,
-      });
     }
 
     return matches;
@@ -197,8 +244,8 @@ export const useOoX = () => {
     setCalculateResult(null);
     setResolvedBlock([]);
 
-    // 未回答のorder質問をチェック
-    const orderQuestions = QUESTIONS.filter(isOrderQuestion);
+    // ★修正: isOrderQuestion関数を使わず filter 内で直接判定
+    const orderQuestions = questions.filter((q) => q.kind === "order");
     const unanswered = orderQuestions.filter((q) => !answers[q.id]);
 
     if (unanswered.length > 0) {
@@ -230,7 +277,6 @@ export const useOoX = () => {
       const data: CalculateResponse = await res.json();
       setCalculateResult(data);
 
-      // conflict check
       const conflictIndex = data.order.findIndex((el) => Array.isArray(el));
       const hasConflict = conflictIndex !== -1;
 
@@ -244,11 +290,7 @@ export const useOoX = () => {
       }
     } catch (e) {
       console.error("Calculate API Error:", e);
-      const errorMessage =
-        e instanceof Error
-          ? `計算エラーが発生しました: ${e.message}`
-          : "計算エラーが発生しました";
-      alert(errorMessage);
+      alert("計算エラーが発生しました");
       setLoading(false);
     }
   };
@@ -266,18 +308,6 @@ export const useOoX = () => {
     );
   };
 
-  const handleRestart = () => {
-    setStep(OOX_STEPS.START);
-    setAnswers({});
-    setCalculateResult(null);
-    setTierMap({});
-    setDescribeResult(null);
-    setConflictBlock([]);
-    setResolvedBlock([]);
-  };
-
-  // ✅ Describe: healthStatus は calculateResult.health を優先して使う
-  // （今後、healthをサーバーで出す/クライアントで出す、どっちでも対応できる形）
   const handleDescribe = async (
     rawOrder: OrderElement[],
     userTierMap?: Partial<Record<FunctionCode, Tier>>,
@@ -287,11 +317,8 @@ export const useOoX = () => {
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
     const finalOrder = rawOrder.flat() as FunctionCode[];
-
-    // healthStatus: サーバーの結果があればそれ、無ければQuiz集計を使う
     const healthStatus = healthFromCalc ?? quizHealthStatus;
 
-    // tierMap: ユーザー指定があればそれ、無ければ順位から自動割り当て
     const tierMapForApi: Partial<Record<FunctionCode, Tier>> = {};
     finalOrder.forEach((func, index) => {
       if (userTierMap && userTierMap[func]) {
@@ -328,14 +355,20 @@ export const useOoX = () => {
       setStep(OOX_STEPS.RESULT);
     } catch (e) {
       console.error("Describe API Error:", e);
-      const errorMessage =
-        e instanceof Error
-          ? `分析エラーが発生しました: ${e.message}`
-          : "分析エラーが発生しました";
-      alert(errorMessage);
+      alert("分析エラーが発生しました");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRestart = () => {
+    setStep(OOX_STEPS.START);
+    setAnswers({});
+    setCalculateResult(null);
+    setTierMap({});
+    setDescribeResult(null);
+    setConflictBlock([]);
+    setResolvedBlock([]);
   };
 
   return {
@@ -343,8 +376,11 @@ export const useOoX = () => {
     answers,
     calculateResult,
     describeResult,
-    loading,
-    loadingMessage,
+    loading: loading || loadingQuestions,
+    loadingMessage: loadingQuestions
+      ? "質問データを読み込み中..."
+      : loadingMessage,
+    questions,
     conflictBlock,
     resolvedBlock,
     tierMap,

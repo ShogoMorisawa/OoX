@@ -23,49 +23,37 @@ export type DescribeResponse = {
   description: string;
 };
 
-// 選択肢の効果（health質問用）
-export type ChoiceEffect = {
-  health?: 0 | 1; // 0: 不健全寄り, 1: 健全寄り
-};
-
 // 選択肢型
 export type Choice = {
-  id: "A" | "B" | "C";
+  id: string;
+  questionId: string;
+  choiceId: "A" | "B";
   text: string;
-  // order質問の場合
-  winner?: FunctionCode;
-  loser?: FunctionCode;
-  // health質問の場合
-  effect?: ChoiceEffect;
+  relatedFunction: FunctionCode;
+  healthScore: number;
 };
 
-// 質問データ型（kind で分岐）
-export type OrderQuestion = {
+export type Question = {
   id: string;
-  kind: "order";
-  pair: [FunctionCode, FunctionCode];
+  questionId: string;
+  kind: "order" | "health";
   text: string;
+  functionPair?: [FunctionCode, FunctionCode];
+  targetFunction?: FunctionCode;
+  displayOrder: number;
   choices: Choice[];
 };
 
-export type HealthQuestion = {
+
+// Supabaseから取得する生データの型
+export type SupabaseChoice = {
   id: string;
-  kind: "health";
-  target: FunctionCode;
+  question_id: string;
+  choice_id: "A" | "B";
   text: string;
-  choices: Choice[];
+  related_function: FunctionCode;
+  health_score: number;
 };
-
-export type Question = OrderQuestion | HealthQuestion;
-
-// 型ガード関数
-export function isOrderQuestion(q: Question): q is OrderQuestion {
-  return q.kind === "order";
-}
-
-export function isHealthQuestion(q: Question): q is HealthQuestion {
-  return q.kind === "health";
-}
 
 // ステップ型（constants/steps.ts の OOX_STEPS から導出）
 export type Step = "start" | "quiz" | "resolve" | "hierarchy" | "result";

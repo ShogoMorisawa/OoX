@@ -7,7 +7,6 @@ import ResolveScreen from "@/components/screens/resolve";
 import HierarchyScreen from "@/components/screens/hierarchy";
 import ResultScreen from "@/components/screens/result";
 import { OOX_STEPS } from "@/constants/steps";
-import { QUESTIONS } from "@/constants/questions";
 import type { FunctionCode } from "@/types/oox";
 
 export default function Screens() {
@@ -15,6 +14,7 @@ export default function Screens() {
 
   const {
     step,
+    questions,
     answers,
     calculateResult,
     describeResult,
@@ -42,7 +42,7 @@ export default function Screens() {
   if (step === OOX_STEPS.QUIZ) {
     return (
       <QuizScreen
-        questions={QUESTIONS}
+        questions={questions}
         answers={answers}
         loading={loading}
         loadingMessage={loadingMessage}
