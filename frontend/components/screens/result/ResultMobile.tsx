@@ -1,72 +1,69 @@
 "use client";
 
+import Image from "next/image";
+
 import { ResultViewProps } from "./index";
 
 export default function ResultMobile({
-  calculateResult,
   describeResult,
   onRestart,
 }: ResultViewProps) {
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-6 font-sans">
-      <div className="max-w-2xl w-full bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-700">
-        <div className="h-32 bg-gradient-to-r from-indigo-900 to-purple-900 flex items-center justify-center">
-          <h1 className="text-3xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-pink-200">
-            OoX MIRROR
-          </h1>
+    <div
+      className="min-h-screen flex items-center justify-center px-6 py-12 bg-cover bg-center"
+      style={{ backgroundImage: "url('/images/oox_background.png')" }}
+    >
+      <div className="w-full max-w-3xl flex flex-col items-center gap-10">
+        <div className="relative flex items-center justify-center w-72 h-72">
+          <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute inset-[-24px] rounded-full border border-white/20 blur-[1px]" />
+          <div className="absolute inset-[-12px] rounded-full border border-white/40 blur-[0.5px]" />
+          <div className="absolute inset-0 rounded-full shadow-[0_0_40px_rgba(255,255,255,0.8)]" />
+
+          <div className="relative z-10 w-full h-full rounded-full overflow-hidden">
+            <Image
+              src="/images/result_creature.png"
+              alt="Your Archetype"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
 
-        <div className="p-8 space-y-8">
-          <div className="text-center">
-            <p className="text-gray-400 text-sm mb-2 uppercase tracking-widest">
-              Archetype
-            </p>
-            <h2 className="text-4xl font-extrabold text-white mb-4">
-              {describeResult.title}
-            </h2>
-            <div className="w-16 h-1 bg-blue-500 mx-auto rounded-full"></div>
-          </div>
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-wide text-sky-900 drop-shadow-sm">
+            {describeResult.title}
+          </h1>
+          <p className="text-sm text-sky-800/70 tracking-widest">
+            OoX Psychological Archetype
+          </p>
+        </div>
 
-          <div className="prose prose-invert prose-lg mx-auto leading-relaxed text-gray-300">
+        <div className="relative w-full max-w-2xl">
+          <Image
+            src="/images/oox_quiz_question.png"
+            alt="Description Bubble"
+            width={800}
+            height={400}
+            className="w-full h-auto"
+          />
+          <div className="absolute inset-0 px-8 py-6 flex items-center justify-center text-sky-900 text-sm md:text-base leading-relaxed text-center">
             <p className="whitespace-pre-wrap">{describeResult.description}</p>
           </div>
-
-          <div className="bg-gray-900 rounded-xl p-6 mt-6">
-            <h3 className="text-sm font-bold text-gray-500 mb-4 uppercase">
-              Logic Structure
-            </h3>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {calculateResult.order.map((el, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div
-                    className={`
-                      w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-1
-                      ${
-                        i < 2
-                          ? "bg-yellow-500 text-black shadow-lg shadow-yellow-500/50"
-                          : i < 4
-                          ? "bg-blue-600 text-white"
-                          : i < 6
-                          ? "bg-gray-600 text-gray-200"
-                          : "bg-gray-800 text-gray-500 border border-gray-700"
-                      }
-                    `}
-                  >
-                    {Array.isArray(el) ? "?" : el}
-                  </div>
-                  <span className="text-xs text-gray-500">{i + 1}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={onRestart}
-            className="w-full py-4 rounded-xl font-bold text-lg bg-white text-gray-900 hover:bg-gray-200 transition-all"
-          >
-            もう一度鏡を覗く
-          </button>
         </div>
+
+        <button
+          onClick={onRestart}
+          className="relative w-64 h-14 transition-transform hover:scale-105 active:scale-95"
+        >
+          <Image
+            src="/images/oox_result_button-with-letter.png"
+            alt="Go to World"
+            fill
+            className="object-contain"
+          />
+        </button>
       </div>
     </div>
   );
