@@ -1,6 +1,6 @@
 "use client";
 
-import StartScreen from "@/components/screens/pc/StartScreen";
+import StartScreen from "@/components/screens/start";
 import QuizScreen from "@/components/screens/pc/QuizScreen";
 import ResolveScreen from "@/components/screens/pc/ResolveScreen";
 import HierarchyScreen from "@/components/screens/hierarchy";

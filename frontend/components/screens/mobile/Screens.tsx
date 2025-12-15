@@ -1,6 +1,6 @@
 "use client";
 
-import StartScreen from "@/components/screens/mobile/StartScreen";
+import StartScreen from "@/components/screens/start";
 import QuizScreen from "@/components/screens/mobile/QuizScreen";
 import ResolveScreen from "@/components/screens/mobile/ResolveScreen";
 import ResultScreen from "@/components/screens/mobile/ResultScreen";
