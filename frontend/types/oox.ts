@@ -65,3 +65,23 @@ export type Step =
 
 // 階層型（constants/tier.ts の OOX_TIER から導出）
 export type Tier = "Dominant" | "High" | "Middle" | "Low";
+
+export type WorldUserResult = {
+  id: string;
+  created_at: string;
+
+  // 表示用
+  title: string;
+  description: string;
+  icon_url: string;
+
+  // 配置・アイコン決定用
+  dominant_function: FunctionCode; // アイコン種別
+  second_function: FunctionCode; // エリア決定用
+
+  // 生データ（詳細表示したい場合などに使用）
+  answers?: Record<string, string>;
+  function_order?: FunctionCode[];
+  tier_map?: Record<FunctionCode, Tier>;
+  health_status?: Record<FunctionCode, "O" | "o" | "x">;
+};
