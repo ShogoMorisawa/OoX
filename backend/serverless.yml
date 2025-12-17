@@ -17,6 +17,7 @@ provider:
         APP_ENV: production # Or use ${sls:stage} if you want the environment to match the stage
         APP_KEY: ${env:APP_KEY} # .envのキーを使う
         SESSION_DRIVER: cookie # Change to database if you have set up a database
+        QUEUE_CONNECTION: database
         # DB設定（.envの値をそのままAWSに渡す設定）
         DB_CONNECTION: pgsql
         DB_HOST: ${env:DB_HOST}
