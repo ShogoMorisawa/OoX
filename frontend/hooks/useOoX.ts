@@ -310,6 +310,7 @@ export const useOoX = () => {
     const healthStatus = healthFromCalc ?? quizHealthStatus;
 
     const tierMapForApi: Partial<Record<FunctionCode, Tier>> = {};
+
     finalOrder.forEach((func, index) => {
       if (userTierMap && userTierMap[func]) {
         tierMapForApi[func] = userTierMap[func];
@@ -325,7 +326,10 @@ export const useOoX = () => {
     const requestBody = { finalOrder, healthStatus, tierMap: tierMapForApi };
 
     try {
-      console.log("Describe API Request:", { url, body: requestBody });
+      console.log("Describe API Request (Async Start):", {
+        url,
+        body: requestBody,
+      });
 
       const res = await fetch(url, {
         method: "POST",
@@ -340,13 +344,42 @@ export const useOoX = () => {
         );
       }
 
-      const data: DescribeResponse = await res.json();
-      setDescribeResult(data);
-      setStep(OOX_STEPS.RESULT);
+      const { job_id: jobId } = await res.json();
+      if (!jobId) throw new Error("ジョブIDの取得に失敗しました");
+
+      checkPollJobStatus(jobId);
     } catch (e) {
       console.error("Describe API Error:", e);
       alert("分析エラーが発生しました");
-    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkPollJobStatus = async (jobId: string) => {
+    try {
+      const url = `${API_BASE_URL}/api/describe/status/${jobId}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        if (res.status === 404) throw new Error("ジョブが見つかりません");
+        throw new Error(`Status check failed: ${res.status}`);
+      }
+      const data = await res.json();
+      console.log(`Job Status: ${data.status}`);
+
+      if (data.status === "completed") {
+        setDescribeResult(data.data as DescribeResponse);
+        setStep(OOX_STEPS.RESULT);
+        setLoading(false);
+      } else if (data.status === "failed") {
+        throw new Error(data.error || "分析に失敗しました");
+      } else {
+        setTimeout(() => checkPollJobStatus(jobId), POLL_INTERVAL);
+      }
+    } catch (e) {
+      console.error("Polling Error:", e);
+      const errorMessage =
+        e instanceof Error ? e.message : "分析中にエラーが発生しました";
+      alert(errorMessage);
       setLoading(false);
     }
   };
