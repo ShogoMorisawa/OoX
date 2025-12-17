@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "bref/bref": "^2.4",
+        "bref/extra-php-extensions": "^1.8",
         "bref/laravel-bridge": "^2.7",
         "google-gemini-php/client": "^2.7",
         "google-gemini-php/laravel": "^2.0",

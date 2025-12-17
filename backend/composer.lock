@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "de99159266b100796a36bcfd541971ee",
+    "content-hash": "a56ff7e39fba5eb02d0e3bcae45dddfe",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -235,6 +235,66 @@
                 }
             ],
             "time": "2025-10-25T16:58:41+00:00"
+        },
+        {
+            "name": "bref/extra-php-extensions",
+            "version": "1.8.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brefphp/extra-php-extensions.git",
+                "reference": "3dfebd6ffd76ae866a4c844fef1d093f1c445646"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brefphp/extra-php-extensions/zipball/3dfebd6ffd76ae866a4c844fef1d093f1c445646",
+                "reference": "3dfebd6ffd76ae866a4c844fef1d093f1c445646",
+                "shasum": ""
+            },
+            "conflict": {
+                "bref/bref": "<2.1.15"
+            },
+            "require-dev": {
+                "async-aws/core": "^1.7",
+                "async-aws/lambda": "^1.1",
+                "bref/logger": "^1.0",
+                "mnapoli/silly": "^1.7",
+                "mnapoli/silly-php-di": "^1.2",
+                "php-di/php-di": "^6.3",
+                "symfony/finder": "^5.4",
+                "symfony/http-client": "^5.4",
+                "symfony/process": "^5.4"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                }
+            ],
+            "description": "Extra PHP extensions for your lambda application.",
+            "support": {
+                "issues": "https://github.com/brefphp/extra-php-extensions/issues",
+                "source": "https://github.com/brefphp/extra-php-extensions/tree/1.8.6"
+            },
+            "funding": [
+                {
+                    "url": "https://bref.sh/#enterprise",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/Nyholm",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/mnapoli",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-08-11T10:21:20+00:00"
         },
         {
             "name": "bref/laravel-bridge",
