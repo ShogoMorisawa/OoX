@@ -62,6 +62,16 @@ functions:
         #          rate: rate(1 minute)
         #          input: '"schedule:run"'
 
+    # This function processes queued jobs every minute
+    worker:
+        handler: artisan
+        runtime: php-82-console
+        timeout: 720 # 12分（これならGeminiが長考しても大丈夫！）
+        events:
+            - schedule:
+                rate: rate(1 minute)
+                input: '"queue:work --stop-when-empty --max-time=600"'
+
 plugins:
     # We need to include the Bref plugin
     - ./vendor/bref/bref
