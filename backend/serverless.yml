@@ -18,6 +18,7 @@ provider:
         APP_KEY: ${env:APP_KEY} # .envのキーを使う
         SESSION_DRIVER: cookie # Change to database if you have set up a database
         QUEUE_CONNECTION: database
+        CACHE_STORE: database # Lambda環境ではfileドライバは使えないため、databaseを明示的に指定
         GEMINI_REQUEST_TIMEOUT: 600 # Geminiを10分待つように設定
         # DB設定（.envの値をそのままAWSに渡す設定）
         DB_CONNECTION: pgsql
