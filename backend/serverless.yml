@@ -50,6 +50,9 @@ functions:
     web:
         handler: public/index.php
         runtime: php-82-fpm
+        layers:
+            - ${bref:layer.php-82}
+            - ${bref:extra.pgsql-php-82}  # PostgreSQLドライバ
         timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
         events:
             - httpApi: '*'
@@ -58,6 +61,9 @@ functions:
     artisan:
         handler: artisan
         runtime: php-82-console
+        layers:
+            - ${bref:layer.php-82}
+            - ${bref:extra.pgsql-php-82}  # PostgreSQLドライバ
         timeout: 720 # in seconds
         # Uncomment to also run the scheduler every minute
         #events:
@@ -69,6 +75,9 @@ functions:
     worker:
         handler: artisan
         runtime: php-82-console
+        layers:
+            - ${bref:layer.php-82}
+            - ${bref:extra.pgsql-php-82}  # PostgreSQLドライバ
         timeout: 720 # 12分（これならGeminiが長考しても大丈夫！）
         events:
             - schedule:
