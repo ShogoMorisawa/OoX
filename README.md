@@ -2,7 +2,7 @@
 
 ### 質問に答えて、あなたのキャラを生み出そう！
 
-<img width="300" height="300" alt="スクリーンショット 2025-12-19 1 06 04" src="https://github.com/user-attachments/assets/b73deaeb-9f82-4307-adc6-c1797c691b22" />
+<img width="500" height="500" alt="スクリーンショット 2025-12-19 1 06 04" src="https://github.com/user-attachments/assets/b73deaeb-9f82-4307-adc6-c1797c691b22" />
 
 OoX（オークス）は、ユングの心理機能をベースに、独自のアルゴリズムで精神構造を解剖する内省エンジンです。心理機能の「序列」を定め、各機能の健全度を測定。それらを Dominant（王様） / High（騎士） / Middle（市民） / Low（迷子） の 4 階層に分類することで、その人の性格を多層的に描写する独自理論「OoX」を用いています。
 
@@ -89,13 +89,12 @@ WORLD に漂う他の細胞をクリックすることで、その人の「種�
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS v4
-- **Animation:** Framer Motion (バイオ・メタリックな質感の実現)
 
 #### **Backend**
 
 - **Framework:** Laravel 12 (PHP 8.2+)
 - **Serverless:** Bref / AWS Lambda (PHP on Serverless)
-- **AI Engine:** Google Gemini API (1.5 / 2.0 Flash)
+- **AI Engine:** Google Gemini API
 - **Core Logic:** Tarjan's SCC Algorithm (グラフ理論を用いた葛藤検知)
 
 #### **Infrastructure & Database**
