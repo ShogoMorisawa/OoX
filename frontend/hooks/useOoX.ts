@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 import {
@@ -26,6 +27,8 @@ type Match = {
 };
 
 export const useOoX = () => {
+  const router = useRouter();
+
   // --- State ---
   const [step, setStep] = useState<Step>(OOX_STEPS.START);
   const [answers, setAnswers] = useState<Record<string, ChoiceId>>({});
@@ -423,7 +426,7 @@ export const useOoX = () => {
   };
 
   const handleGoToWorld = () => {
-    setStep(OOX_STEPS.WORLD);
+    router.push("/world");
   };
 
   const handleRestart = () => {
