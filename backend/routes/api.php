@@ -38,7 +38,7 @@ Route::post('/describe', function (Request $request) {
     // バリデーション
     $data = $request->validate([
         'finalOrder' => 'required|array',
-        'finalOrder.*' => 'nullable|string|array', // FunctionCode または FunctionCode[] を許容
+        'finalOrder.*' => 'required|string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se', // FunctionCode（文字列）のみ許可
         'healthStatus' => 'required|array',
         'healthStatus.*' => 'required|string|in:O,o,x', // O, o, x のみ許可
         'tierMap' => 'required|array',
@@ -47,6 +47,13 @@ Route::post('/describe', function (Request $request) {
 
     // ユニークなIDを発行
     $jobId = (string) Str::uuid();
+
+    // GenerateDescriptionJobを実行する前に明示的にキャッシュに登録しておかないと404！
+    Cache::put("job_status_{$jobId}", [
+        'status' => 'queued',
+        'message' => 'Job has been queued.',
+        'progress' => 0,
+    ], 600);
 
     // ジョブをキュー（棚）に投入
     // ※第2引数にjobIdを渡して、Jobの中でキャッシュキーとして使う
