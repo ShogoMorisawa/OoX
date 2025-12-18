@@ -245,7 +245,18 @@ export const useOoX = () => {
         setStep(OOX_STEPS.RESOLVE);
         setLoading(false);
       } else {
-        await handleDescribe(data.order, tierMap, data.health);
+        const defaultTierMap: Partial<Record<FunctionCode, Tier>> = {};
+        const flatOrder = data.order.flat() as FunctionCode[];
+
+        flatOrder.forEach((func, index) => {
+          if (index < 2) defaultTierMap[func] = OOX_TIER.DOMINANT;
+          else if (index < 4) defaultTierMap[func] = OOX_TIER.HIGH;
+          else if (index < 6) defaultTierMap[func] = OOX_TIER.MIDDLE;
+          else defaultTierMap[func] = OOX_TIER.LOW;
+        });
+        setTierMap(defaultTierMap);
+        setStep(OOX_STEPS.HIERARCHY);
+        setLoading(false);
       }
     } catch (e) {
       console.error("Calculate API Error:", e);
