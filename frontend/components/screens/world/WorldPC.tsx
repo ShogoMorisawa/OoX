@@ -29,12 +29,12 @@ const BIOME_ZONES: Record<
   Ne: { xMin: 5, xMax: 25, yMin: 5, yMax: 40 },
   Si: { xMin: 30, xMax: 50, yMin: 10, yMax: 45 },
   Se: { xMin: 55, xMax: 75, yMin: 5, yMax: 40 },
-  Fe: { xMin: 80, xMax: 95, yMin: 10, yMax: 50 },
+  Fi: { xMin: 80, xMax: 95, yMin: 10, yMax: 50 },
   // 下段
   Ni: { xMin: 5, xMax: 25, yMin: 55, yMax: 90 },
   Ti: { xMin: 30, xMax: 50, yMin: 55, yMax: 85 },
-  Fi: { xMin: 55, xMax: 75, yMin: 55, yMax: 90 },
-  Te: { xMin: 80, xMax: 95, yMin: 55, yMax: 85 },
+  Te: { xMin: 55, xMax: 75, yMin: 55, yMax: 90 },
+  Fe: { xMin: 80, xMax: 95, yMin: 55, yMax: 85 },
 };
 
 // ユーザーIDから決定論的な疑似乱数を生成（0-1の範囲）
@@ -131,7 +131,7 @@ export default function WorldPC({ users = [], loading = false }: Props) {
       <div className="absolute inset-0 z-10 pointer-events-none">
         {placedUsers.map((user) => {
           const colorClass =
-            FUNC_COLORS[user.dominant_function] || "border-gray-400 bg-white";
+            FUNC_COLORS[user.second_function] || "border-gray-400 bg-white";
 
           return (
             <button
