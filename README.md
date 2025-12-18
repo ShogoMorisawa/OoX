@@ -2,7 +2,7 @@
 
 ### 質問に答えて、あなたのキャラを生み出そう！
 
-<img width="803" height="795" alt="スクリーンショット 2025-12-19 1 06 04" src="https://github.com/user-attachments/assets/b73deaeb-9f82-4307-adc6-c1797c691b22" />
+<img width="300" height="300" alt="スクリーンショット 2025-12-19 1 06 04" src="https://github.com/user-attachments/assets/b73deaeb-9f82-4307-adc6-c1797c691b22" />
 
 OoX（オークス）は、ユングの心理機能をベースに、独自のアルゴリズムで精神構造を解剖する内省エンジンです。心理機能の「序列」を定め、各機能の健全度を測定。それらを Dominant（王様） / High（騎士） / Middle（市民） / Low（迷子） の 4 階層に分類することで、その人の性格を多層的に描写する独自理論「OoX」を用いています。
 
@@ -38,7 +38,7 @@ Quiz で収集された「証拠」を数学的に解析し、論理的な矛盾
 
 ## 🏰 STEP 3: Hierarchy — 精神構造の階層化
 
-<img width="800" height="796" alt="スクリーンショット 2025-12-19 1 11 51" src="https://github.com/user-attachments/assets/ab0ba5e0-409d-4899-9c4c-783840b3e55c" />
+<img width="300" height="300" alt="スクリーンショット 2025-12-19 1 11 51" src="https://github.com/user-attachments/assets/ab0ba5e0-409d-4899-9c4c-783840b3e55c" />
 
 Resolve で一本の線に並んだ 8 つの細胞に対し、あなたの精神世界での「役割」を割り当て、「精神 OS」のアーキテクチャを決定します。
 
@@ -51,7 +51,7 @@ Resolve で一本の線に並んだ 8 つの細胞に対し、あなたの精神
 
 ## 📝 STEP 4: Result — 誕生と描写
 
-<img width="808" height="797" alt="スクリーンショット 2025-12-19 1 14 07" src="https://github.com/user-attachments/assets/8d961d68-96b3-4601-9ae0-997448c409f1" />
+<img width="300" height="300" alt="スクリーンショット 2025-12-19 1 14 07" src="https://github.com/user-attachments/assets/8d961d68-96b3-4601-9ae0-997448c409f1" />
 
 培養された細胞たちが最終的な形を成し、あなたの精神の生態系を象徴する「種族」が誕生します。
 
@@ -67,7 +67,7 @@ Resolve で一本の線に並んだ 8 つの細胞に対し、あなたの精神
 
 ## 🌐 WORLD — 拡張される共有生態系
 
-<img width="1470" height="750" alt="スクリーンショット 2025-12-19 1 15 14" src="https://github.com/user-attachments/assets/f57b619d-cf5f-4c3f-8123-851fd436ccec" />
+<img width="700" height="300" alt="スクリーンショット 2025-12-19 1 15 14" src="https://github.com/user-attachments/assets/f57b619d-cf5f-4c3f-8123-851fd436ccec" />
 
 診断を終えたあなたのキャラクターは、他のユーザーたちが息づく広大な「WORLD」へと解き放たれます。
 
