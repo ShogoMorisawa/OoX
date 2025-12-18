@@ -27,7 +27,7 @@ provider:
         DB_DATABASE: ${env:DB_DATABASE}
         DB_USERNAME: ${env:DB_USERNAME}
         DB_PASSWORD: ${env:DB_PASSWORD}
-
+        DB_SSLMODE: ${env:DB_SSLMODE}
 package:
     # Files and directories to exclude from deployment
     patterns:
@@ -51,19 +51,20 @@ functions:
         handler: public/index.php
         runtime: php-82-fpm
         layers:
-            - ${bref:layer.php-82}
-            - ${bref:extra.pgsql-php-82}  # PostgreSQLドライバ
+            - ${bref-extra:pgsql-php-82}  # PostgreSQLドライバ
         timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
         events:
-            - httpApi: '*'
+            - httpApi:
+                path: '*'
+                method: '*'
+                cors: true # 👈 これが必要です！
 
     # This function lets us run artisan commands in Lambda
     artisan:
         handler: artisan
         runtime: php-82-console
         layers:
-            - ${bref:layer.php-82}
-            - ${bref:extra.pgsql-php-82}  # PostgreSQLドライバ
+            - ${bref-extra:pgsql-php-82}  # PostgreSQLドライバ
         timeout: 720 # in seconds
         # Uncomment to also run the scheduler every minute
         #events:
@@ -76,8 +77,7 @@ functions:
         handler: artisan
         runtime: php-82-console
         layers:
-            - ${bref:layer.php-82}
-            - ${bref:extra.pgsql-php-82}  # PostgreSQLドライバ
+            - ${bref-extra:pgsql-php-82}  # PostgreSQLドライバ
         timeout: 720 # 12分（これならGeminiが長考しても大丈夫！）
         events:
             - schedule:
