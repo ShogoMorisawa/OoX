@@ -37,6 +37,18 @@ const BIOME_ZONES: Record<
   Te: { xMin: 80, xMax: 95, yMin: 55, yMax: 85 },
 };
 
+// ユーザーIDから決定論的な疑似乱数を生成（0-1の範囲）
+function seededRandom(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // 32bit整数に変換
+  }
+  // 0-1の範囲に正規化
+  return Math.abs(hash) / 2147483647;
+}
+
 export default function WorldPC({ users = [], loading = false }: Props) {
   const [selectedUser, setSelectedUser] = useState<WorldUserResult | null>(
     null
@@ -74,24 +86,26 @@ export default function WorldPC({ users = [], loading = false }: Props) {
     })[] = [];
 
     sorted.forEach((user) => {
-      const zone =
-        BIOME_ZONES[user.second_function] ?? {
-          xMin: 45,
-          xMax: 55,
-          yMin: 45,
-          yMax: 55,
-        };
+      const zone = BIOME_ZONES[user.second_function] ?? {
+        xMin: 45,
+        xMax: 55,
+        yMin: 45,
+        yMax: 55,
+      };
 
-      const x =
-        zone.xMin + Math.random() * Math.max(zone.xMax - zone.xMin, 1);
-      const y =
-        zone.yMin + Math.random() * Math.max(zone.yMax - zone.yMin, 1);
+      // ユーザーIDから決定論的な疑似乱数を生成
+      const randomX = seededRandom(user.id);
+      const randomY = seededRandom(user.id + "_y");
+      const randomDelay = seededRandom(user.id + "_delay");
+
+      const x = zone.xMin + randomX * Math.max(zone.xMax - zone.xMin, 1);
+      const y = zone.yMin + randomY * Math.max(zone.yMax - zone.yMin, 1);
 
       result.push({
         ...user,
         x,
         y,
-        animationDelay: `${Math.random() * 5}s`,
+        animationDelay: `${randomDelay * 5}s`,
       });
     });
 
