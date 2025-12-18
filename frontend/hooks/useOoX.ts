@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 import {
@@ -24,14 +24,6 @@ type Match = {
   winner: FunctionCode;
   loser: FunctionCode;
 };
-
-function toHealthStatus(sum: number, count: number): "O" | "o" | "x" {
-  if (count <= 0) return "o";
-  const ratio = sum / count;
-  if (ratio >= 0.67) return "O";
-  if (ratio >= 0.34) return "o";
-  return "x";
-}
 
 export const useOoX = () => {
   // --- State ---
@@ -105,59 +97,6 @@ export const useOoX = () => {
 
     fetchQuestions();
   }, []);
-
-  // --- Derived: HealthStatus計算 ---
-  const quizHealthStatus = useMemo(() => {
-    const sums: Record<FunctionCode, number> = {
-      Ni: 0,
-      Ne: 0,
-      Ti: 0,
-      Te: 0,
-      Fi: 0,
-      Fe: 0,
-      Si: 0,
-      Se: 0,
-    };
-    const counts: Record<FunctionCode, number> = {
-      Ni: 0,
-      Ne: 0,
-      Ti: 0,
-      Te: 0,
-      Fi: 0,
-      Fe: 0,
-      Si: 0,
-      Se: 0,
-    };
-
-    for (const q of questions) {
-      // ★修正: isHealthQuestion関数を使わず kind で判定
-      if (q.kind !== "health") continue;
-
-      if (!q.targetFunction) continue;
-
-      const a = answers[q.id];
-      if (!a) continue;
-
-      const choice = q.choices.find((c) => c.id === a);
-      if (choice) {
-        sums[q.targetFunction] += choice.healthScore;
-        counts[q.targetFunction] += 1;
-      }
-    }
-
-    const healthStatus: Record<FunctionCode, "O" | "o" | "x"> = {
-      Ni: toHealthStatus(sums.Ni, counts.Ni),
-      Ne: toHealthStatus(sums.Ne, counts.Ne),
-      Ti: toHealthStatus(sums.Ti, counts.Ti),
-      Te: toHealthStatus(sums.Te, counts.Te),
-      Fi: toHealthStatus(sums.Fi, counts.Fi),
-      Fe: toHealthStatus(sums.Fe, counts.Fe),
-      Si: toHealthStatus(sums.Si, counts.Si),
-      Se: toHealthStatus(sums.Se, counts.Se),
-    };
-
-    return healthStatus;
-  }, [answers, questions]);
 
   // --- Handlers ---
   const handleStart = () => {
@@ -234,7 +173,6 @@ export const useOoX = () => {
     setCalculateResult(null);
     setResolvedBlock([]);
 
-    // ★修正: isOrderQuestion関数を使わず filter 内で直接判定
     const orderQuestions = questions.filter((q) => q.kind === "order");
     const unanswered = orderQuestions.filter((q) => !answers[q.id]);
 
@@ -245,8 +183,36 @@ export const useOoX = () => {
     }
 
     const matches = buildMatchesFromAnswers();
+
+    const healthScores: Record<FunctionCode, number> = {
+      Ni: 0,
+      Ne: 0,
+      Ti: 0,
+      Te: 0,
+      Fi: 0,
+      Fe: 0,
+      Si: 0,
+      Se: 0,
+    };
+
+    for (const q of questions) {
+      // kindが'health'の質問のみ対象
+      if (q.kind !== "health" || !q.targetFunction) continue;
+
+      const a = answers[q.id];
+      if (!a) continue;
+
+      const choice = q.choices.find((c) => c.id === a);
+      if (choice) {
+        healthScores[q.targetFunction] += choice.healthScore;
+      }
+    }
+
     const url = `${API_BASE_URL}/api/calculate`;
-    const requestBody = { matches };
+    const requestBody = {
+      matches,
+      health_scores: healthScores,
+    };
 
     try {
       console.log("Calculate API Request:", { url, body: requestBody });
@@ -310,7 +276,8 @@ export const useOoX = () => {
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
     const finalOrder = rawOrder.flat() as FunctionCode[];
-    const healthStatus = healthFromCalc ?? quizHealthStatus;
+    // healthFromCalc が必ずある前提（APIから返ってくる）
+    const healthStatus = healthFromCalc || {};
 
     const tierMapForApi: Partial<Record<FunctionCode, Tier>> = {};
 
