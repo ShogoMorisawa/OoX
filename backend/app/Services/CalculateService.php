@@ -77,6 +77,25 @@ class CalculateService
         return array_map(fn ($x) => count($x) === 1 ? $x[0] : $x, $order);
     }
 
+    public function calculateHealthStatus(array $scores): array
+    {
+        $status = [];
+        $functions = ['Ni', 'Ne', 'Ti', 'Te', 'Fi', 'Fe', 'Si', 'Se'];
+        foreach ($functions as $func) {
+            // スコアが存在しない場合は2
+            $score = $scores[$func] ?? 2;
+            if ($score >= 3) {
+                $status[$func] = 'O';
+            } elseif ($score === 2) {
+                $status[$func] = 'o';
+            } else {
+                $status[$func] = 'x';
+            }
+        }
+
+        return $status;
+    }
+
     protected function dfsTarjan(string $at, array $graph): void
     {
         // 初回訪問で id/low を同じ値にセットし、スタックに積む

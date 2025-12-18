@@ -20,12 +20,18 @@ Route::get('/hello', function () {
 
 Route::post('/calculate', function (Request $request, CalculateService $service) {
     $matches = $request->json('matches', []);
+    $healthScores = $request->json('health_scores', []);
 
     $graph = $service->buildGraph($matches);
     $sccs = $service->findSCCs($graph);
     $order = $service->getFinalOrder($matches);
 
-    return response()->json(compact('order'));
+    $health = $service->calculateHealthStatus($healthScores);
+
+    return response()->json([
+        'order' => $order,
+        'health' => $health,
+    ]);
 });
 
 /*
