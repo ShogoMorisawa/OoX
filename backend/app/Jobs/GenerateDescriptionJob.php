@@ -49,11 +49,6 @@ class GenerateDescriptionJob implements ShouldQueue
                 'data' => $result,
             ], 3600);
 
-            // ステータスを完了に更新
-            Cache::put("job_status_{$this->jobId}", [
-                'status' => 'completed',
-            ], 3600);
-
             Log::info("Job {$this->jobId}: Gemini生成成功");
         } catch (Exception $e) {
             Log::error("Job {$this->jobId}: 失敗 - ".$e->getMessage());
@@ -62,12 +57,6 @@ class GenerateDescriptionJob implements ShouldQueue
 
             // 失敗を記録
             Cache::put("job_result_{$this->jobId}", [
-                'status' => 'failed',
-                'error' => $errorMessage,
-            ], 3600);
-
-            // ステータスを失敗に更新（エラーメッセージも含める）
-            Cache::put("job_status_{$this->jobId}", [
                 'status' => 'failed',
                 'error' => $errorMessage,
             ], 3600);
