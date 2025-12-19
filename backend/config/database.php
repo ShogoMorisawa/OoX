@@ -95,10 +95,10 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => 'require',
-            // 'sslrootcert' => base_path('supabase-ca.crt'), // optionsの外に書く！
+            'sslmode' => env('DB_SSLMODE', 'require'),
             'options' => [
                 // Transaction Pooler (Supavisor) を使う場合の必須設定
+                // prepared statementは使えない
                 PDO::ATTR_EMULATE_PREPARES => true,
             ],
         ],
