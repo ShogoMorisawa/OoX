@@ -88,7 +88,18 @@ export const useOoX = () => {
               })),
           }));
 
-          setQuestions(formattedQuestions);
+          // kindでソート: "order"を先に、"health"を後に。同じkind内ではdisplayOrderでソート
+          const sortedQuestions = formattedQuestions.sort((a, b) => {
+            if (a.kind !== b.kind) {
+              // "order"を先に、"health"を後に
+              if (a.kind === "order") return -1;
+              if (b.kind === "order") return 1;
+            }
+            // 同じkind内ではdisplayOrderでソート
+            return a.displayOrder - b.displayOrder;
+          });
+
+          setQuestions(sortedQuestions);
         }
       } catch (e) {
         console.error("質問データの取得に失敗:", e);
