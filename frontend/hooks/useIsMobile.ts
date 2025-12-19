@@ -11,13 +11,10 @@ export const useIsMobile = (breakpoint: number = 768) => {
     const update = () => setIsMobile(mq.matches);
     update();
 
-    // Safari対応で addEventListener が無い場合も考慮
-    if (mq.addEventListener) mq.addEventListener("change", update);
-    else mq.addListener(update);
+    mq.addEventListener("change", update);
 
     return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", update);
-      else mq.removeListener(update);
+      mq.removeEventListener("change", update);
     };
   }, [breakpoint]);
 
