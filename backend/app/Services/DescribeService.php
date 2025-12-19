@@ -119,41 +119,46 @@ class DescribeService
         $sliced = array_pad(array_slice($flattened, 0, 3), 3, 'Fi');
         [$first, $second, $third] = $sliced;
 
+        // 第1機能（生物名）
+        $creatureMap = [
+            'Ni' => 'フクロウ',
+            'Ne' => 'ネコ',
+            'Si' => 'リス',
+            'Se' => 'チーター',
+            'Ti' => 'クモ',
+            'Te' => 'ハチ',
+            'Fi' => 'ウサギ',
+            'Fe' => 'イルカ',
+        ];
+
+        // 第2機能（場所/エリア）
         $habitatMap = [
-            'Ni' => '深海の',
-            'Ne' => '空の',
-            'Ti' => '静かな書斎の',
-            'Te' => '工房の',
-            'Fi' => '森の',
-            'Fe' => '広場の',
-            'Si' => '図書館の',
-            'Se' => '前線の',
+            'Ni' => '深海',
+            'Ne' => '空',
+            'Si' => '遺跡',
+            'Se' => '海',
+            'Ti' => '洞窟',
+            'Te' => '砂漠',
+            'Fi' => '森',
+            'Fe' => '街',
         ];
+
+        // 第3機能（形容詞）
         $adjectiveMap = [
-            'Ni' => '静かな',
-            'Ne' => 'ひらめき豊かな',
+            'Ni' => '深い',
+            'Ne' => '自由な',
+            'Si' => '静かな',
+            'Se' => '情熱的な',
             'Ti' => '賢い',
-            'Te' => '合理的な',
+            'Te' => '強い',
             'Fi' => '繊細な',
-            'Fe' => 'あたたかい',
-            'Si' => '懐かしさを宿した',
-            'Se' => '瞬発力のある',
-        ];
-        $roleMap = [
-            'Ni' => '観測者',
-            'Ne' => 'トリックスター',
-            'Ti' => '分析者',
-            'Te' => '戦略家',
-            'Fi' => '語り手',
-            'Fe' => 'ムードメーカー',
-            'Si' => '記憶の番人',
-            'Se' => 'プレイヤー',
+            'Fe' => '優しい',
         ];
 
-        $habitat = $habitatMap[$first] ?? '森の';
-        $adjective = $adjectiveMap[$second] ?? '繊細な';
-        $role = $roleMap[$third] ?? '語り手';
+        $creature = $creatureMap[$first] ?? 'ウサギ';
+        $habitat = $habitatMap[$second] ?? '森';
+        $adjective = $adjectiveMap[$third] ?? '繊細な';
 
-        return "{$habitat}{$adjective}{$role}";
+        return "{$habitat}の{$adjective}{$creature}";
     }
 }
