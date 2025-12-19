@@ -3,6 +3,7 @@
 import Image from "next/image";
 
 import { ResolveViewProps } from "./index";
+import { FUNCTION_TEXT } from "@/constants/cells";
 
 export default function ResolveMobile({
   remainingFuncs,
@@ -33,7 +34,7 @@ export default function ResolveMobile({
           <p className="text-sm md:text-base text-slate-600 leading-relaxed">
             同じくらい大事そうに見える細胞たちです。
             <br className="hidden md:block" />
-            「自分の中でより強く働いている順」に、左のカードをタップして決めてください。
+            「自分の中でより強く働いている順」に、下のカードをタップして決めてください。
           </p>
         </div>
 
@@ -75,7 +76,7 @@ export default function ResolveMobile({
                     <span
                       className={`text-xs md:text-sm font-semibold mb-1 tracking-wide ${quicksandClassName}`}
                     >
-                      {func}
+                      {FUNCTION_TEXT[func]}
                     </span>
                     <span className="text-[11px] md:text-xs text-slate-600 opacity-80">
                       タップして順位を決める
@@ -101,10 +102,15 @@ export default function ResolveMobile({
                     {i + 1}
                   </div>
                   {slot ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs font-semibold text-sky-800">
-                        {slot}
-                      </span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center px-1 gap-1">
+                      <div className="relative w-8 h-8">
+                        <Image
+                          src="/images/oox_start_cell-lightBlue.png"
+                          alt="Cell"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
                     </div>
                   ) : isSlotInCurrentBlock[i] ? (
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -134,18 +140,25 @@ export default function ResolveMobile({
                       const angle =
                         (360 / remainingFuncs.length) * idx * (Math.PI / 180);
                       const radius = 40;
-                      const x = Math.cos(angle) * radius;
-                      const y = Math.sin(angle) * radius;
+                      const x =
+                        Math.round(Math.cos(angle) * radius * 100) / 100;
+                      const y =
+                        Math.round(Math.sin(angle) * radius * 100) / 100;
                       return (
                         <div
                           key={func}
-                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
                           style={{
                             transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                           }}
                         >
-                          <div className="px-3 py-1 rounded-full bg-white/80 text-[10px] md:text-xs text-sky-700 shadow-sm">
-                            {func}
+                          <div className="relative w-10 h-10">
+                            <Image
+                              src="/images/oox_start_cell-lightBlue.png"
+                              alt="Cell"
+                              fill
+                              className="object-contain"
+                            />
                           </div>
                         </div>
                       );
