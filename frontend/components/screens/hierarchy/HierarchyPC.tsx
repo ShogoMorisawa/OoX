@@ -158,9 +158,6 @@ export default function HierarchyPC({
                             }`}
                           />
                           <div className="absolute inset-0 flex flex-col justify-center px-4 pt-1">
-                            <span className="text-[10px] text-sky-800 font-bold">
-                              {func}
-                            </span>
                             <span className="text-[9px] text-sky-700 leading-tight">
                               {FUNCTION_TEXT[func]}
                             </span>

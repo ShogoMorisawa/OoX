@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HierarchyViewProps } from "./index";
 import { Tier } from "@/types/oox";
 import { OOX_TIER } from "@/constants/tier";
+import { FUNCTION_TEXT } from "@/constants/cells";
 
 // ユーザー提供の画像配列
 const CELL_IMAGES = [
@@ -177,11 +178,11 @@ export default function HierarchyMobile({
                 {/* 機能名バッジ */}
                 <div
                   className={`
-                    absolute bottom-2 px-3 py-1 rounded-full text-[10px] font-bold shadow-md z-10
-                    bg-white/90 text-slate-700 border border-slate-100
+                    absolute bottom-2 px-3 py-1 rounded-full text-[9px] font-semibold shadow-md z-10
+                    bg-white/90 text-slate-700 border border-slate-100 text-center max-w-[120px]
                   `}
                 >
-                  {func} type
+                  {FUNCTION_TEXT[func]}
                 </div>
               </div>
             </motion.div>
