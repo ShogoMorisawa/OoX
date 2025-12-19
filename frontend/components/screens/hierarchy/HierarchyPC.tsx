@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { HierarchyViewProps } from "./index";
 import { OOX_TIER } from "@/constants/tier";
@@ -16,17 +17,6 @@ const FUNCTION_TEXT: Record<FunctionCode, string> = {
   Si: "なじみのあるやり方・思い出が安心",
   Se: "五感で今この瞬間を楽しみたい",
 };
-
-const CELL_IMAGES = [
-  "/images/oox_hie_cell-king-red-left.png",
-  "/images/oox_hie_cell-king-lightBlue-right.png",
-  "/images/oox_hie_cell-knight-red-left.png",
-  "/images/oox_hie_cell-knight-lightBlue-right.png",
-  "/images/oox_hie_cell-citizen-yellow-left.png",
-  "/images/oox_hie_cell-citizen-green-right.png",
-  "/images/oox_hie_cell-lost-left.png",
-  "/images/oox_hie_cell-lost-right.png",
-] as const;
 
 const TIER_INFO: { tier: Tier; title: string; subtitle: string }[] = [
   {
@@ -51,146 +41,291 @@ const TIER_INFO: { tier: Tier; title: string; subtitle: string }[] = [
   },
 ];
 
-export default function HierarchyPC(props: HierarchyViewProps) {
-  const { finalOrder, tierMap, loading, loadingMessage, onConfirm } = props;
+// 画像パス定義
+const CELL_IMAGES = {
+  [OOX_TIER.DOMINANT]: [
+    "/images/oox_hie_cell-king-red-left.png",
+    "/images/oox_hie_cell-king-lightBlue-right.png",
+  ],
+  [OOX_TIER.HIGH]: [
+    "/images/oox_hie_cell-knight-red-left.png",
+    "/images/oox_hie_cell-knight-lightBlue-right.png",
+  ],
+  [OOX_TIER.MIDDLE]: [
+    "/images/oox_hie_cell-citizen-yellow-left.png",
+    "/images/oox_hie_cell-citizen-green-right.png",
+  ],
+  [OOX_TIER.LOW]: [
+    "/images/oox_hie_cell-lost-left.png",
+    "/images/oox_hie_cell-lost-right.png",
+  ],
+};
+
+const getCellImage = (tier: Tier, isEven: boolean): string => {
+  const images = CELL_IMAGES[tier] || CELL_IMAGES[OOX_TIER.LOW];
+  return isEven ? images[0] : images[1];
+};
+
+// PC版のレイアウト設定
+const CELL_HEIGHT = 90; // 細胞1つ分の高さ(px)
+const BORDER_GAP = 130; // PC版の隙間
+const CONTAINER_PADDING_TOP = 40; // 上部の余白
+
+export default function HierarchyPC({
+  finalOrder,
+  borders,
+  tierMap,
+  onBorderChange,
+  onConfirm,
+  loading,
+  loadingMessage,
+}: HierarchyViewProps) {
+  // 座標計算ロジック（Mobileと同じ考え方）
+  const getCellTop = (index: number) => {
+    const bordersBefore = borders.filter((b) => b <= index).length;
+    return (
+      CONTAINER_PADDING_TOP + index * CELL_HEIGHT + bordersBefore * BORDER_GAP
+    );
+  };
+
+  const getBorderTop = (borderVal: number, borderIndex: number) => {
+    const basePos = borderVal * CELL_HEIGHT;
+    const gapsBefore = borderIndex * BORDER_GAP;
+    return CONTAINER_PADDING_TOP + basePos + gapsBefore + BORDER_GAP / 2;
+  };
+
+  const handleMove = (
+    index: 0 | 1 | 2,
+    currentPos: number,
+    direction: "up" | "down"
+  ) => {
+    const newPos = direction === "up" ? currentPos - 1 : currentPos + 1;
+    onBorderChange(index, newPos);
+  };
+
+  const totalHeight =
+    finalOrder.length * CELL_HEIGHT + borders.length * BORDER_GAP + 200;
 
   return (
-    <div className="min-h-screen md:h-screen flex flex-col justify-between px-4 py-6 md:px-6 md:py-8 bg-[url('/images/oox_background.png')] bg-cover bg-center overflow-y-auto md:overflow-hidden">
-      <div className="max-w-5xl w-full mx-auto flex flex-col h-full">
-        {/* タイトル */}
-        <div className="text-center space-y-2 mb-4 shrink-0">
-          <p className="text-xs md:text-sm text-sky-900/60 leading-relaxed">
-            上から 1〜8 位の順番は、さっきの質問で決まった「よく使う順」。
-            <br className="hidden md:block" />
-            線で区切られた 4 つのゾーンが、それぞれ 王様 / 騎士 / 市民 / 迷子
-            を表しています。
+    <div className="min-h-screen md:h-screen flex flex-col justify-between px-4 py-6 md:px-6 md:py-8 bg-[url('/images/oox_background.png')] bg-cover bg-center overflow-hidden">
+      <div className="max-w-6xl w-full mx-auto flex flex-col h-full">
+        {/* タイトル & ガイド */}
+        <div className="text-center space-y-2 mb-2 shrink-0 z-20">
+          <h1 className="text-2xl font-bold text-sky-900">
+            精神構造の役割決定
+          </h1>
+          <p className="text-sm text-sky-900/70">
+            ▲▼ボタンで境界線を移動させてください。細胞の間隔は自動で調整されます。
           </p>
         </div>
 
-        {/* メイングリッドエリア */}
-        <div className="grid grid-cols-12 gap-4 md:gap-6 items-stretch flex-1 min-h-0">
-          {/* 中央：境界線 + 着せ替え細胞 + 吹き出し */}
-          <div className="col-span-12 md:col-span-8 flex justify-center">
-            <div className="relative w-full max-w-[340px] h-[850px] md:h-full">
-              <div className="absolute inset-0">
-                {finalOrder.map((func, index) => {
-                  const imgSrc = CELL_IMAGES[index] ?? CELL_IMAGES[0];
-                  const tier = tierMap[func] ?? OOX_TIER.LOW;
-                  const tierLabel =
-                    TIER_INFO.find((t) => t.tier === tier)?.title ?? "";
-                  const isEven = index % 2 === 0;
-                  const topPercent = (index * 100) / 8 + 2;
+        {/* メインエリア (3カラム構成) */}
+        <div className="grid grid-cols-12 gap-8 items-start flex-1 min-h-0 relative">
+          {/* 左カラム: 装飾（空きスペース or 将来的な情報） */}
+          <div className="col-span-2 hidden lg:block"></div>
 
-                  const translateX = isEven
-                    ? "-translate-x-[60px] md:-translate-x-[120px] lg:-translate-x-[140px]"
-                    : "translate-x-[60px] md:translate-x-[120px] lg:translate-x-[140px]";
+          {/* 中央カラム: インタラクティブエリア (細胞 + 波線) */}
+          <div className="col-span-12 md:col-span-8 lg:col-span-6 flex justify-center h-full overflow-y-auto overflow-x-hidden pt-4 pb-20 custom-scrollbar">
+            <div
+              className="relative w-full max-w-[400px]"
+              style={{ height: `${totalHeight}px` }}
+            >
+              {/* --- 細胞リスト --- */}
+              {finalOrder.map((func, index) => {
+                const tier = tierMap[func] ?? OOX_TIER.LOW;
+                const isEven = index % 2 === 0; // 0, 2, 4... (左寄り)
+                const imgSrc = getCellImage(tier, isEven);
+                const topY = getCellTop(index);
 
-                  return (
-                    <div
-                      key={func}
-                      className={`absolute left-1/2 -translate-x-1/2 flex items-center gap-1 md:gap-2 ${translateX}`}
-                      style={{ top: `${topPercent}%` }}
-                    >
-                      {/* 左側に寄っている細胞（偶数番目）の場合、吹き出しを右側に */}
-                      {isEven && (
-                        <div className="relative w-[110px] md:w-[130px] lg:w-[160px] aspect-[3/2] -order-1 shrink-0">
+                return (
+                  <motion.div
+                    key={func}
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute w-full flex justify-center items-center pointer-events-none" // pointer-events-noneでドラッグの邪魔をしない
+                    style={{ top: topY, height: CELL_HEIGHT }}
+                  >
+                    {/* 細胞本体 */}
+                    <div className="relative w-full flex items-center justify-center">
+                      {/* 吹き出し (説明) */}
+                      <div
+                        className={`absolute top-0 w-36 opacity-0 md:opacity-100 transition-opacity duration-500
+                           ${
+                             isEven
+                               ? "right-[65%] text-right"
+                               : "left-[65%] text-left"
+                           }
+                         `}
+                      >
+                        <div className="relative">
                           <Image
                             src="/images/oox_quiz_question.png"
-                            alt="説明吹き出し"
-                            fill
-                            className="object-contain"
+                            alt="bubble"
+                            width={140}
+                            height={80}
+                            className={`object-contain opacity-60 ${
+                              isEven ? "" : "-scale-x-100"
+                            }`}
                           />
-                          <div className="absolute inset-0 flex flex-col items-center justify-center px-3 text-[8px] md:text-[10px] text-sky-900 text-center leading-tight">
-                            <p className="font-bold mb-0.5">{func}</p>
-                            <p className="whitespace-pre-line scale-90 md:scale-100 origin-center">
+                          <div className="absolute inset-0 flex flex-col justify-center px-4 pt-1">
+                            <span className="text-[10px] text-sky-800 font-bold">
+                              {func}
+                            </span>
+                            <span className="text-[9px] text-sky-700 leading-tight">
                               {FUNCTION_TEXT[func]}
-                            </p>
+                            </span>
                           </div>
                         </div>
-                      )}
-
-                      {/* 細胞 */}
-                      <div className="flex flex-col items-center gap-0.5 shrink-0">
-                        <div className="relative w-[60px] md:w-[75px] lg:w-[90px] aspect-square">
-                          <Image
-                            src={imgSrc}
-                            alt={`${func} cell`}
-                            fill
-                            className="object-contain drop-shadow-md"
-                          />
-                        </div>
-                        <p className="text-[10px] md:text-[11px] text-sky-900/80 font-semibold whitespace-nowrap">
-                          {index + 1} 位・{tierLabel}
-                        </p>
                       </div>
 
-                      {/* 右側に寄っている細胞（奇数番目）の場合、吹き出しを左側に */}
-                      {!isEven && (
-                        <div className="relative w-[110px] md:w-[130px] lg:w-[160px] aspect-[3/2] shrink-0">
-                          <Image
-                            src="/images/oox_quiz_question.png"
-                            alt="説明吹き出し"
-                            fill
-                            className="object-contain"
-                          />
-                          <div className="absolute inset-0 flex flex-col items-center justify-center px-3 text-[8px] md:text-[10px] text-sky-900 text-center leading-tight">
-                            <p className="font-bold mb-0.5">{func}</p>
-                            <p className="whitespace-pre-line scale-90 md:scale-100 origin-center">
-                              {FUNCTION_TEXT[func]}
-                            </p>
-                          </div>
+                      {/* 画像 (AnimatePresenceで切り替えアニメ) */}
+                      <div
+                        className={`relative w-20 h-20 md:w-24 md:h-24 z-10 drop-shadow-lg transform ${
+                          isEven ? "-translate-x-8" : "translate-x-8"
+                        }`}
+                      >
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={tier}
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 20,
+                            }}
+                            className="w-full h-full relative"
+                          >
+                            <Image
+                              src={imgSrc}
+                              alt={`${func} cell`}
+                              fill
+                              className="object-contain"
+                            />
+                          </motion.div>
+                        </AnimatePresence>
+                        {/* ラベル */}
+                        <div className="absolute -bottom-2 inset-x-0 flex justify-center">
+                          <span className="bg-white/90 px-2 py-0.5 rounded-full text-[10px] font-bold text-sky-800 shadow-sm border border-sky-100">
+                            {index + 1}位
+                          </span>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </motion.div>
+                );
+              })}
+
+              {/* --- 境界線 --- */}
+              {borders.map((borderPos, i) => {
+                const topY = getBorderTop(borderPos, i);
+
+                // Tier情報と色
+                const tierTitles = ["王様", "騎士", "市民"];
+                const colorClass =
+                  i === 0
+                    ? "text-yellow-600 bg-yellow-50 border-yellow-200"
+                    : i === 1
+                    ? "text-sky-600 bg-sky-50 border-sky-200"
+                    : "text-green-600 bg-green-50 border-green-200";
+
+                const canMoveUp =
+                  i === 0 ? borderPos > 1 : borderPos > borders[i - 1] + 1;
+                const canMoveDown =
+                  i === 2 ? borderPos < 7 : borderPos < borders[i + 1] - 1;
+
+                return (
+                  <motion.div
+                    key={`border-${i}`}
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    style={{ top: topY }}
+                    className="absolute left-0 w-full h-0 z-30 flex items-center justify-center"
+                  >
+                    <div className="relative w-[120%] h-16 pointer-events-none -mt-8">
+                      <Image
+                        src="/images/oox_hie_border.png"
+                        alt="border"
+                        fill
+                        className="object-fill opacity-80"
+                      />
+                    </div>
+
+                    {/* コントローラー */}
+                    <div className="absolute right-0 md:-right-16 flex flex-col md:flex-row items-center gap-2">
+                      <div
+                        className={`px-3 py-1 rounded-full border shadow-sm backdrop-blur-sm ${colorClass}`}
+                      >
+                        <span className="text-xs font-bold">
+                          {tierTitles[i]}境界
+                        </span>
+                      </div>
+                      <div className="flex gap-1 bg-white rounded-full shadow-md p-1 border border-slate-100">
+                        <button
+                          onClick={() =>
+                            handleMove(i as 0 | 1 | 2, borderPos, "up")
+                          }
+                          disabled={!canMoveUp}
+                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleMove(i as 0 | 1 | 2, borderPos, "down")
+                          }
+                          disabled={!canMoveDown}
+                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 
-          {/* 右：階層ラベル（王様 / 騎士 / 市民 / 迷子） */}
-          <div className="hidden md:flex col-span-4 flex-col justify-between items-center h-full">
+          {/* 右カラム: 凡例（説明） */}
+          <div className="hidden md:flex col-span-4 lg:col-span-4 flex-col justify-center gap-4 h-full pb-20 opacity-80 pointer-events-none">
             {TIER_INFO.map((info) => (
               <div
                 key={info.tier}
-                className="relative w-full max-w-[190px] flex-1 min-h-0 flex items-center justify-center"
+                className="relative w-full max-w-[200px] aspect-[2/1] mx-auto"
               >
-                <div className="relative w-full h-full max-h-full">
-                  <Image
-                    src="/images/oox_resolve_bubble.png"
-                    alt={info.title}
-                    fill
-                    className="object-contain"
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-sky-900">
-                    <p className="text-base md:text-lg font-bold mb-1">
-                      {info.title}
-                    </p>
-                    <p className="text-[10px] md:text-xs whitespace-pre-line leading-tight">
-                      {info.subtitle}
-                    </p>
-                  </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-white/40 rounded-2xl border border-white/50 backdrop-blur-sm shadow-sm">
+                  <p className="text-lg font-bold text-sky-900 mb-1">
+                    {info.title}
+                  </p>
+                  <p className="text-xs text-sky-800 leading-tight">
+                    {info.subtitle}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 下部ボタン */}
-        <div className="mt-8 mb-4 md:mb-0 md:mt-8 flex flex-col items-center gap-3 shrink-0 relative z-10">
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className={`px-8 py-3 rounded-full text-sm md:text-base font-bold shadow-lg shadow-sky-300/40
-              transition-all hover:scale-[1.02] active:scale-95
-              ${
-                loading
-                  ? "bg-sky-300/60 text-white cursor-not-allowed"
-                  : "bg-gradient-to-r from-sky-400 to-cyan-400 text-white hover:from-sky-500 hover:to-cyan-500"
-              }`}
-          >
-            {loading ? loadingMessage || "分析中..." : "この階層でストーリーを読む"}
-          </button>
+        {/* フッター */}
+        <div className="fixed bottom-8 left-0 w-full pointer-events-none z-50">
+          <div className="max-w-6xl mx-auto px-6 text-center">
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className={`
+                pointer-events-auto px-12 py-4 rounded-full text-lg font-bold shadow-xl transition-all
+                ${
+                  loading
+                    ? "bg-slate-300 text-white cursor-not-allowed"
+                    : "bg-gradient-to-r from-sky-500 to-cyan-400 text-white hover:scale-105 active:scale-95"
+                }
+              `}
+            >
+              {loading ? loadingMessage : "決定する"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
