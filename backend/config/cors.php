@@ -20,8 +20,8 @@ return [
     'allowed_methods' => ['*'],
 
     // 開発中は全許可でOK。本番ではフロントエンドのドメインを指定推奨
-    'allowed_origins' => ['*'],
-    // または 'allowed_origins' => ['http://localhost:3000', 'https://your-production-url.com'],
+    // 'allowed_origins' => ['*'],
+    'allowed_origins' => ['http://localhost:3000', 'https://oox-seven.vercel.app'],
 
     'allowed_origins_patterns' => [],
 
