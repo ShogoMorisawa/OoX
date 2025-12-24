@@ -26,15 +26,15 @@ const BIOME_ZONES: Record<
   { xMin: number; xMax: number; yMin: number; yMax: number }
 > = {
   // 上段
-  Ne: { xMin: 5, xMax: 25, yMin: 5, yMax: 40 },
-  Si: { xMin: 30, xMax: 50, yMin: 10, yMax: 45 },
-  Se: { xMin: 55, xMax: 75, yMin: 5, yMax: 40 },
-  Fi: { xMin: 80, xMax: 95, yMin: 10, yMax: 50 },
+  Ne: { xMin: 5, xMax: 27, yMin: 10, yMax: 50 },
+  Si: { xMin: 28, xMax: 50, yMin: 10, yMax: 50 },
+  Se: { xMin: 51, xMax: 72, yMin: 10, yMax: 50 },
+  Fi: { xMin: 73, xMax: 95, yMin: 10, yMax: 50 },
   // 下段
-  Ni: { xMin: 5, xMax: 25, yMin: 55, yMax: 90 },
-  Ti: { xMin: 30, xMax: 50, yMin: 55, yMax: 85 },
-  Te: { xMin: 55, xMax: 75, yMin: 55, yMax: 90 },
-  Fe: { xMin: 80, xMax: 95, yMin: 55, yMax: 85 },
+  Ni: { xMin: 5, xMax: 27, yMin: 50, yMax: 90 },
+  Ti: { xMin: 28, xMax: 50, yMin: 50, yMax: 90 },
+  Te: { xMin: 51, xMax: 72, yMin: 50, yMax: 90 },
+  Fe: { xMin: 73, xMax: 95, yMin: 50, yMax: 90 },
 };
 
 // ユーザーIDから決定論的な疑似乱数を生成（0-1の範囲）
