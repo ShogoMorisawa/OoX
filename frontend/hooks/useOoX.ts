@@ -16,7 +16,7 @@ import {
 
 import { OOX_STEPS } from "@/constants/steps";
 import { OOX_TIER } from "@/constants/tier";
-import { getAnimalIcon } from "@/constants/icons";
+import { getIcon } from "@/constants/icons";
 import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
 
 type ChoiceId = Choice["id"]; // "A" | "B"
@@ -378,7 +378,7 @@ export const useOoX = () => {
       });
 
       // アイコンURLを取得
-      const iconUrl = getAnimalIcon(dominant);
+      const iconUrl = getIcon(dominant, second);
 
       // DBへ保存
       const { error } = await supabase.from("user_results").insert({
