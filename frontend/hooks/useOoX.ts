@@ -19,13 +19,9 @@ import { OOX_TIER } from "@/constants/tier";
 import { getIcon } from "@/constants/icons";
 import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
 
-type ChoiceId = Choice["id"]; // "A" | "B"
+import { buildMatchesFromAnswers } from "@/lib/oox/matches";
 
-type Match = {
-  id: string;
-  winner: FunctionCode;
-  loser: FunctionCode;
-};
+type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
 export const useOoX = () => {
   const router = useRouter();
@@ -153,35 +149,6 @@ export const useOoX = () => {
     }
   };
 
-  const buildMatchesFromAnswers = (): Match[] => {
-    const matches: Match[] = [];
-
-    for (const q of questions) {
-      // ★修正: isOrderQuestion関数を使わず kind で判定
-      if (q.kind !== "order") continue;
-
-      const choiceId = answers[q.id];
-      if (!choiceId) continue;
-
-      const choice = q.choices.find((c) => c.id === choiceId);
-
-      if (choice && choice.relatedFunction && q.functionPair) {
-        const winner = choice.relatedFunction;
-        const loser = q.functionPair.find((f) => f !== winner);
-
-        if (loser) {
-          matches.push({
-            id: q.id,
-            winner: winner,
-            loser: loser,
-          });
-        }
-      }
-    }
-
-    return matches;
-  };
-
   const handleCalculate = async () => {
     setLoading(true);
     setLoadingMessage("思考回路を解析中...");
@@ -197,7 +164,7 @@ export const useOoX = () => {
       return;
     }
 
-    const matches = buildMatchesFromAnswers();
+    const matches = buildMatchesFromAnswers(orderQuestions, answers);
 
     const healthScores: Record<FunctionCode, number> = {
       Ni: 0,
