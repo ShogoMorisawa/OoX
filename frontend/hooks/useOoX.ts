@@ -11,7 +11,6 @@ import {
   Tier,
   Question,
   Choice,
-  SupabaseChoice,
 } from "@/types/oox";
 
 import { OOX_STEPS } from "@/constants/steps";
@@ -24,6 +23,7 @@ import { buildHealthScores } from "@/lib/oox/health";
 import { buildDefaultTierMap, isCompleteTierMap } from "@/lib/oox/tier";
 import { calculate } from "@/lib/api/calculate";
 import { checkJobStatus, startDescribeJob } from "@/lib/api/describe";
+import { fetchQuestions } from "@/lib/supabase/questions";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -53,56 +53,11 @@ export const useOoX = () => {
 
   // --- Effect: Supabaseから質問を取得 ---
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const loadQuestions = async () => {
       try {
         setLoadingQuestions(true);
-
-        const { data, error } = await supabase
-          .from("questions")
-          .select(
-            `
-            *,
-            choices (*)
-          `
-          )
-          .order("display_order", { ascending: true });
-
-        if (error) throw error;
-
-        if (data) {
-          const formattedQuestions: Question[] = data.map((q) => ({
-            id: q.question_id,
-            questionId: q.question_id,
-            kind: q.kind,
-            text: q.text,
-            functionPair: q.function_pair,
-            targetFunction: q.target_function,
-            displayOrder: q.display_order,
-            choices: (q.choices as SupabaseChoice[])
-              .sort((a, b) => a.choice_id.localeCompare(b.choice_id))
-              .map((c) => ({
-                id: c.choice_id,
-                choiceId: c.choice_id,
-                questionId: q.question_id,
-                text: c.text,
-                relatedFunction: c.related_function,
-                healthScore: c.health_score ?? 0,
-              })),
-          }));
-
-          // kindでソート: "order"を先に、"health"を後に。同じkind内ではdisplayOrderでソート
-          const sortedQuestions = formattedQuestions.sort((a, b) => {
-            if (a.kind !== b.kind) {
-              // "order"を先に、"health"を後に
-              if (a.kind === "order") return -1;
-              if (b.kind === "order") return 1;
-            }
-            // 同じkind内ではdisplayOrderでソート
-            return a.displayOrder - b.displayOrder;
-          });
-
-          setQuestions(sortedQuestions);
-        }
+        const questions = await fetchQuestions();
+        setQuestions(questions);
       } catch (e) {
         console.error("質問データの取得に失敗:", e);
         alert("質問データの読み込みに失敗しました。");
@@ -111,7 +66,7 @@ export const useOoX = () => {
       }
     };
 
-    fetchQuestions();
+    loadQuestions();
   }, []);
 
   // --- Handlers ---

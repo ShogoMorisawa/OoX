@@ -54,6 +54,17 @@ export type SupabaseChoice = {
   health_score: number;
 };
 
+// Supabaseから取得する生データの型
+export type SupabaseQuestion = {
+  question_id: string;
+  kind: "order" | "health";
+  text: string;
+  function_pair?: [FunctionCode, FunctionCode];
+  target_function?: FunctionCode;
+  display_order: number;
+  choices: SupabaseChoice[];
+};
+
 // ステップ型（constants/steps.ts の OOX_STEPS から導出）
 export type Step =
   | "start"
