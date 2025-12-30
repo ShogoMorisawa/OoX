@@ -21,6 +21,7 @@ import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
 
 import { buildMatchesFromAnswers } from "@/lib/oox/matches";
 import { buildHealthScores } from "@/lib/oox/health";
+import { buildDefaultTierMap, mergeTierMap } from "@/lib/oox/tier";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -176,8 +177,6 @@ export const useOoX = () => {
     };
 
     try {
-      console.log("Calculate API Request:", { url, body: requestBody });
-
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -206,15 +205,7 @@ export const useOoX = () => {
         setStep(OOX_STEPS.RESOLVE);
         setLoading(false);
       } else {
-        const defaultTierMap: Partial<Record<FunctionCode, Tier>> = {};
-        const flatOrder = data.order.flat() as FunctionCode[];
-
-        flatOrder.forEach((func, index) => {
-          if (index < 2) defaultTierMap[func] = OOX_TIER.DOMINANT;
-          else if (index < 4) defaultTierMap[func] = OOX_TIER.HIGH;
-          else if (index < 6) defaultTierMap[func] = OOX_TIER.MIDDLE;
-          else defaultTierMap[func] = OOX_TIER.LOW;
-        });
+        const defaultTierMap = buildDefaultTierMap(data.order);
         setTierMap(defaultTierMap);
         setStep(OOX_STEPS.HIERARCHY);
         setLoading(false);
@@ -232,47 +223,25 @@ export const useOoX = () => {
 
   const handleConfirmHierarchy = async () => {
     if (!calculateResult) return;
-    await handleDescribe(
-      calculateResult.order,
-      tierMap,
-      calculateResult.health
-    );
+
+    const finalOrder = calculateResult.order.flat() as FunctionCode[];
+    const finalTierMap = mergeTierMap(calculateResult.order, tierMap);
+
+    await handleDescribe(finalOrder, finalTierMap, calculateResult.health);
   };
 
   const handleDescribe = async (
-    rawOrder: OrderElement[],
-    userTierMap?: Partial<Record<FunctionCode, Tier>>,
-    healthFromCalc?: Record<FunctionCode, "O" | "o" | "x">
+    finalOrder: FunctionCode[],
+    finalTierMap: Record<FunctionCode, Tier>,
+    finalHealthStatus: Record<FunctionCode, "O" | "o" | "x">
   ) => {
     setLoading(true);
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
-    const finalOrder = rawOrder.flat() as FunctionCode[];
-    // healthFromCalc が必ずある前提（APIから返ってくる）
-    const healthStatus = healthFromCalc || {};
-
-    const tierMapForApi: Partial<Record<FunctionCode, Tier>> = {};
-
-    finalOrder.forEach((func, index) => {
-      if (userTierMap && userTierMap[func]) {
-        tierMapForApi[func] = userTierMap[func];
-      } else {
-        if (index < 2) tierMapForApi[func] = OOX_TIER.DOMINANT;
-        else if (index < 4) tierMapForApi[func] = OOX_TIER.HIGH;
-        else if (index < 6) tierMapForApi[func] = OOX_TIER.MIDDLE;
-        else tierMapForApi[func] = OOX_TIER.LOW;
-      }
-    });
-
     const url = `${API_BASE_URL}/api/describe`;
-    const requestBody = { finalOrder, healthStatus, tierMap: tierMapForApi };
+    const requestBody = { finalOrder, finalHealthStatus, finalTierMap };
 
     try {
-      console.log("Describe API Request (Async Start):", {
-        url,
-        body: requestBody,
-      });
-
       const res = await fetch(url, {
         method: "POST",
         headers: {

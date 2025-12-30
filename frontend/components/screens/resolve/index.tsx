@@ -15,7 +15,6 @@ type Props = {
   onSelectOrder: (func: FunctionCode) => void;
   onReset: () => void;
   onConfirm: () => void;
-  onDescribe: () => void;
 };
 
 export type ResolveViewProps = {
@@ -43,7 +42,6 @@ export default function ResolveContainer({
   onSelectOrder,
   onReset,
   onConfirm,
-  onDescribe,
 }: Props) {
   const isMobile = useIsMobile();
 
@@ -118,12 +116,6 @@ export default function ResolveContainer({
   }, [calculateResult.order, targetBlock]);
 
   const allDecided = remainingFuncs.length === 0;
-
-  useEffect(() => {
-    if (!targetBlock) {
-      onDescribe();
-    }
-  }, [targetBlock, onDescribe]);
 
   if (!targetBlock) {
     return <div className="p-10 text-white">Loading...</div>;

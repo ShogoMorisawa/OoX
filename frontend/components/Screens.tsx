@@ -63,9 +63,6 @@ export default function Screens() {
         onSelectOrder={handleSelectOrder}
         onReset={handleResetConflict}
         onConfirm={handleConfirmConflict}
-        onDescribe={() =>
-          handleDescribe(calculateResult.order as FunctionCode[])
-        }
       />
     );
   }
