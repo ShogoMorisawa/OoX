@@ -8,7 +8,7 @@ import QuizPC from "./QuizPC";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { Choice, Question } from "@/types/oox";
 
-type AnswerValue = Choice["id"];
+type AnswerValue = Choice["choiceId"];
 
 type Props = {
   questions: Question[];
@@ -55,7 +55,9 @@ export default function QuizContainer({
 
   const isLastQuestion = index === totalQuestions - 1;
   const progress = totalQuestions > 0 ? (index + 1) / totalQuestions : 0;
-  const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
+  const currentAnswer = currentQuestion
+    ? answers[currentQuestion.id]
+    : undefined;
 
   const handleSelect = (choiceId: AnswerValue) => {
     if (loading || !currentQuestion) return;
