@@ -17,12 +17,13 @@ import {
 import { OOX_STEPS } from "@/constants/steps";
 import { OOX_TIER } from "@/constants/tier";
 import { getIcon } from "@/constants/icons";
-import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
+import { POLL_INTERVAL } from "@/constants/api";
 
 import { buildMatchesFromAnswers } from "@/lib/oox/matches";
 import { buildHealthScores } from "@/lib/oox/health";
 import { buildDefaultTierMap, isCompleteTierMap } from "@/lib/oox/tier";
 import { calculate } from "@/lib/api/calculate";
+import { checkJobStatus, startDescribeJob } from "@/lib/api/describe";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -233,29 +234,8 @@ export const useOoX = () => {
     setLoading(true);
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
-    const url = `${API_BASE_URL}/api/describe`;
-    const requestBody = { finalOrder, healthStatus, tierMap };
-
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text().catch(() => "Unknown error");
-        throw new Error(
-          `Describe API error: ${res.status} ${res.statusText}\n${errorText}`
-        );
-      }
-
-      const { job_id: jobId } = await res.json();
-      if (!jobId) throw new Error("ジョブIDの取得に失敗しました");
-
+      const jobId = await startDescribeJob(finalOrder, healthStatus, tierMap);
       checkPollJobStatus(jobId);
     } catch (e) {
       console.error("Describe API Error:", e);
@@ -313,31 +293,18 @@ export const useOoX = () => {
 
   const checkPollJobStatus = async (jobId: string) => {
     try {
-      const url = `${API_BASE_URL}/api/describe/status/${jobId}`;
-      const res = await fetch(url, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
-      if (!res.ok) {
-        if (res.status === 404) throw new Error("ジョブが見つかりません");
-        throw new Error(`Status check failed: ${res.status}`);
-      }
-      const data = await res.json();
-      console.log(`Job Status: ${data.status}`);
+      const data = await checkJobStatus(jobId);
 
       if (data.status === "completed") {
-        const resultData = data.data as DescribeResponse;
-
-        setDescribeResult(resultData);
+        setDescribeResult(data.data);
         setStep(OOX_STEPS.RESULT);
         setLoading(false);
 
         if (calculateResult) {
-          await saveToSupabase(calculateResult, resultData, tierMap);
+          await saveToSupabase(calculateResult, data.data, tierMap);
         }
       } else if (data.status === "failed") {
-        throw new Error(data.error || "分析に失敗しました");
+        throw new Error(data.error);
       } else {
         setTimeout(() => checkPollJobStatus(jobId), POLL_INTERVAL);
       }
