@@ -24,6 +24,7 @@ import { calculate } from "@/lib/api/calculate";
 import { checkJobStatus, startDescribeJob } from "@/lib/api/describe";
 import { saveResult } from "@/lib/api/results";
 import { fetchQuestions } from "@/lib/supabase/questions";
+import { getOrCreateBrowserId } from "@/utils/browserId";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -230,6 +231,9 @@ export const useOoX = () => {
       // アイコンURLを取得
       const iconUrl = getIcon(dominant, second);
 
+      // ブラウザIDを取得（なければ新規生成）
+      const browserId = getOrCreateBrowserId();
+
       // DBへ保存
       await saveResult({
         answers: answers,
@@ -241,6 +245,9 @@ export const useOoX = () => {
         title: descRes.title,
         description: descRes.description,
         icon_url: iconUrl,
+        browser_id: browserId,
+        user_id: null, // 現状は未ログイン
+        is_public: true, // デフォルトで公開
       });
 
       console.log("Result saved to Supabase successfully!");

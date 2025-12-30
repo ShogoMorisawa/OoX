@@ -1,4 +1,9 @@
-import { Question, FunctionCode, Choice } from "@/types/oox";
+import {
+  Question,
+  ComparisonQuestion,
+  FunctionCode,
+  Choice,
+} from "@/types/oox";
 
 type ChoiceId = Choice["choiceId"];
 
@@ -18,25 +23,31 @@ export function buildMatchesFromAnswers(
   const matches: Match[] = [];
 
   for (const question of questions) {
+    // comparisonタイプの質問のみ処理
+    if (question.type !== "comparison") {
+      continue;
+    }
+
+    // Type Guard: この時点でquestionはComparisonQuestionとして扱える
+    const comparisonQuestion = question as ComparisonQuestion;
+
     // currentChoiceを取得。
     const choiceId = answers[question.id];
     const currentChoice = question.choices.find(
       (choice) => choice.id === choiceId
     );
 
-    // currentChoiceかrelatedFunctionかfunctionPairが存在しない場合はスキップ。
-    if (
-      !currentChoice ||
-      !currentChoice.relatedFunction ||
-      !question.functionPair
-    ) {
+    // currentChoiceかrelatedFunctionCodeが存在しない場合はスキップ。
+    if (!currentChoice || !currentChoice.relatedFunctionCode) {
       continue;
     }
 
     // winnerとloserを取得。
-    const winner = currentChoice.relatedFunction;
-    const [func1, func2] = question.functionPair;
-    const loser = func1 === winner ? func2 : func1;
+    const winner = currentChoice.relatedFunctionCode;
+    const loser =
+      comparisonQuestion.leftFunctionCode === winner
+        ? comparisonQuestion.rightFunctionCode
+        : comparisonQuestion.leftFunctionCode;
 
     matches.push({
       id: question.id,

@@ -49,7 +49,7 @@ export default function QuizMobile(props: QuizViewProps) {
             </p>
 
             <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-widest">
-              {currentQuestion.kind}
+              {currentQuestion.type === "comparison" ? "比較" : "診断"}
             </p>
 
             <h2 className="text-slate-800 text-lg md:text-xl font-medium leading-relaxed tracking-wide">

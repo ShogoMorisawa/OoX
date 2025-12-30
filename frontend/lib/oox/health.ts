@@ -1,4 +1,4 @@
-import { Question, Choice, FunctionCode } from "@/types/oox";
+import { Question, DiagnosticQuestion, Choice, FunctionCode } from "@/types/oox";
 
 type ChoiceId = Choice["choiceId"];
 
@@ -17,8 +17,13 @@ export function buildHealthScores(
     Se: 0,
   };
   for (const q of questions) {
-    // targetFunctionが存在しない場合はスキップ。
-    if (!q.targetFunction) continue;
+    // diagnosticタイプの質問のみ処理
+    if (q.type !== "diagnostic") {
+      continue;
+    }
+
+    // Type Guard: この時点でqはDiagnosticQuestionとして扱える
+    const diagnosticQuestion = q as DiagnosticQuestion;
 
     const choiceId = answers[q.id];
     // 回答がない場合はスキップ。
@@ -26,7 +31,7 @@ export function buildHealthScores(
 
     const choice = q.choices.find((c) => c.id === choiceId);
     if (choice) {
-      healthScores[q.targetFunction] += choice.healthScore;
+      healthScores[diagnosticQuestion.leftFunctionCode] += choice.scoreValue;
     }
   }
   return healthScores;

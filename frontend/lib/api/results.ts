@@ -11,6 +11,9 @@ export type SaveResultRequest = {
   title: string;
   description: string;
   icon_url: string;
+  browser_id: string; // UUID
+  user_id?: string | null; // 現状は未ログインのためnull
+  is_public: boolean; // デフォルトtrue
 };
 
 export async function saveResult(data: SaveResultRequest): Promise<void> {
