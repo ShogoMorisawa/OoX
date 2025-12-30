@@ -20,6 +20,7 @@ import { getIcon } from "@/constants/icons";
 import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
 
 import { buildMatchesFromAnswers } from "@/lib/oox/matches";
+import { buildHealthScores } from "@/lib/oox/health";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -156,6 +157,7 @@ export const useOoX = () => {
     setResolvedBlock([]);
 
     const orderQuestions = questions.filter((q) => q.kind === "order");
+    const healthQuestions = questions.filter((q) => q.kind === "health");
     const unanswered = orderQuestions.filter((q) => !answers[q.id]);
 
     if (unanswered.length > 0) {
@@ -165,30 +167,7 @@ export const useOoX = () => {
     }
 
     const matches = buildMatchesFromAnswers(orderQuestions, answers);
-
-    const healthScores: Record<FunctionCode, number> = {
-      Ni: 0,
-      Ne: 0,
-      Ti: 0,
-      Te: 0,
-      Fi: 0,
-      Fe: 0,
-      Si: 0,
-      Se: 0,
-    };
-
-    for (const q of questions) {
-      // kindが'health'の質問のみ対象
-      if (q.kind !== "health" || !q.targetFunction) continue;
-
-      const a = answers[q.id];
-      if (!a) continue;
-
-      const choice = q.choices.find((c) => c.id === a);
-      if (choice) {
-        healthScores[q.targetFunction] += choice.healthScore;
-      }
-    }
+    const healthScores = buildHealthScores(healthQuestions, answers);
 
     const url = `${API_BASE_URL}/api/calculate`;
     const requestBody = {
