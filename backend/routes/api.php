@@ -4,6 +4,7 @@ use App\Jobs\GenerateDescriptionJob;
 use App\Services\CalculateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -101,4 +102,48 @@ Route::get('/describe/status/{jobId}', function ($jobId) {
         'status' => 'not_found',
         'message' => '指定されたジョブIDが見つかりません。',
     ], 404);
+});
+
+Route::post('/results', function (Request $request) {
+    // 1. バリデーション（より厳密に）
+    $data = $request->validate([
+        'answers' => 'required|array',
+        'function_order' => 'required|array|size:8',
+        'function_order.*' => 'string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se',
+        'tier_map' => 'required|array',
+        'tier_map.*' => 'required|string|in:Dominant,High,Middle,Low',
+        'health_status' => 'required|array',
+        'health_status.*' => 'required|string|in:O,o,x',
+        'dominant_function' => 'required|string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se',
+        'second_function' => 'required|string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se',
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'icon_url' => 'required|string|url',
+    ]);
+
+    // 2. configから値を取得
+    $supabaseUrl = config('services.supabase.url');
+    $supabaseKey = config('services.supabase.key');
+
+    // 3. Supabase REST APIに送信
+    try {
+        $response = Http::withHeaders([
+            'apikey' => $supabaseKey,
+            'Authorization' => "Bearer {$supabaseKey}",
+            'Content-Type' => 'application/json',
+            'Prefer' => 'return=minimal',
+        ])->post("{$supabaseUrl}/rest/v1/user_results", $data);
+
+        if ($response->failed()) {
+            return response()->json([
+                'error' => 'Supabase connection error',
+                'details' => $response->json() ?? $response->body(),
+            ], $response->status());
+        }
+
+        return response()->json(['message' => 'Result saved successfully'], 201);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Server error', 'message' => $e->getMessage()], 500);
+    }
 });
