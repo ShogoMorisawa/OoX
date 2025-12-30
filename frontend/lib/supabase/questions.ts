@@ -1,4 +1,9 @@
-import { Question, SupabaseQuestion } from "@/types/oox";
+import {
+  Question,
+  ComparisonQuestion,
+  DiagnosticQuestion,
+  SupabaseQuestion,
+} from "@/types/oox";
 import { supabase } from "@/lib/supabaseClient";
 
 export async function fetchQuestions(): Promise<Question[]> {
@@ -16,36 +21,56 @@ export async function fetchQuestions(): Promise<Question[]> {
 
   if (!data) return [];
 
-  const formattedQuestions: Question[] = data.map(
-    (q: SupabaseQuestion): Question => ({
-      id: q.question_id,
-      questionId: q.question_id,
-      kind: q.kind,
+  // データをフロントエンド用に整形
+  const formattedQuestions: Question[] = data.map((q: SupabaseQuestion) => {
+    // 共通部分
+    const base = {
+      id: q.id,
+      code: q.code ?? undefined,
       text: q.text,
-      functionPair: q.function_pair,
-      targetFunction: q.target_function,
       displayOrder: q.display_order,
       choices: q.choices
-        .sort((a, b) => a.choice_id.localeCompare(b.choice_id))
+        .sort((a, b) => a.label.localeCompare(b.label)) // A, B順にソート
         .map((c) => ({
-          id: c.choice_id,
-          choiceId: c.choice_id,
-          questionId: q.question_id,
+          id: c.id,
+          questionId: c.question_id,
+          choiceId: c.label, // DBのlabelをchoiceIdとして扱う
           text: c.text,
-          relatedFunction: c.related_function,
-          healthScore: c.health_score ?? 0,
+          relatedFunctionCode: c.related_function_code,
+          scoreValue: c.score_value ?? 0,
         })),
-    })
-  );
+    };
 
-  // kindでソート: "order"を先に、"health"を後に。同じkind内ではdisplayOrderでソート
-  return formattedQuestions.sort((a, b) => {
-    if (a.kind !== b.kind) {
-      // "order"を先に、"health"を後に
-      if (a.kind === "order") return -1;
-      if (b.kind === "order") return 1;
+    // 型による分岐（Type Guardに対応させる）
+    if (q.type === "comparison") {
+      if (!q.right_function_code) {
+        throw new Error(
+          `Comparison question ${q.id} must have right_function_code`
+        );
+      }
+      return {
+        ...base,
+        type: "comparison",
+        leftFunctionCode: q.left_function_code,
+        rightFunctionCode: q.right_function_code, // DB制約でNot Null
+      } as ComparisonQuestion;
+    } else {
+      return {
+        ...base,
+        type: "diagnostic",
+        leftFunctionCode: q.left_function_code,
+        // rightFunctionCodeは不要
+      } as DiagnosticQuestion;
     }
-    // 同じkind内ではdisplayOrderでソート
+  });
+
+  // typeでソート: comparison -> diagnostic の順
+  return formattedQuestions.sort((a, b) => {
+    if (a.type !== b.type) {
+      // "comparison"を先に、"diagnostic"を後に
+      return a.type === "comparison" ? -1 : 1;
+    }
+    // 同じtype内ではdisplayOrderでソート
     return a.displayOrder - b.displayOrder;
   });
 }

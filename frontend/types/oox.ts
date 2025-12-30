@@ -23,47 +23,62 @@ export type DescribeResponse = {
   description: string;
 };
 
-// 選択肢型
-export type Choice = {
+// 選択肢の型
+export interface Choice {
   id: string;
   questionId: string;
-  choiceId: "A" | "B";
+  choiceId: "A" | "B"; // DBのlabelカラムをchoiceIdとして扱う
   text: string;
-  relatedFunction: FunctionCode;
-  healthScore: number;
-};
+  relatedFunctionCode: FunctionCode; // related_function -> related_function_code
+  scoreValue: number; // health_score -> score_value (0 or 1)
+}
 
-export type Question = {
+// 共通の質問プロパティ
+interface BaseQuestion {
   id: string;
-  questionId: string;
-  kind: "order" | "health";
+  code?: string; // Q-01, H-01など
   text: string;
-  functionPair?: [FunctionCode, FunctionCode];
-  targetFunction?: FunctionCode;
   displayOrder: number;
   choices: Choice[];
-};
+}
 
-// Supabaseから取得する生データの型
-export type SupabaseChoice = {
+// 比較（序列）用の質問型
+export interface ComparisonQuestion extends BaseQuestion {
+  type: "comparison"; // kind: 'order' -> type: 'comparison'
+  leftFunctionCode: FunctionCode;
+  rightFunctionCode: FunctionCode; // 比較対象が必須
+}
+
+// 診断（健全度）用の質問型
+export interface DiagnosticQuestion extends BaseQuestion {
+  type: "diagnostic"; // kind: 'health' -> type: 'diagnostic'
+  leftFunctionCode: FunctionCode; // 対象機能
+  rightFunctionCode?: never; // 診断質問には存在しない
+}
+
+// 統合された質問型（Discriminated Union）
+export type Question = ComparisonQuestion | DiagnosticQuestion;
+
+// Supabaseから返ってくる生の型（スネークケース）
+export interface SupabaseQuestion {
+  id: string;
+  code: string | null;
+  type: "comparison" | "diagnostic";
+  text: string;
+  left_function_code: FunctionCode;
+  right_function_code: FunctionCode | null;
+  display_order: number;
+  choices: SupabaseChoice[]; // JOINされた結果
+}
+
+export interface SupabaseChoice {
   id: string;
   question_id: string;
-  choice_id: "A" | "B";
+  label: "A" | "B"; // DBのカラム名
   text: string;
-  related_function: FunctionCode;
-  health_score: number;
-};
-
-// Supabaseから取得する生データの型
-export type SupabaseQuestion = {
-  question_id: string;
-  kind: "order" | "health";
-  text: string;
-  function_pair?: [FunctionCode, FunctionCode];
-  target_function?: FunctionCode;
-  display_order: number;
-  choices: SupabaseChoice[];
-};
+  related_function_code: FunctionCode;
+  score_value: number;
+}
 
 // ステップ型（constants/steps.ts の OOX_STEPS から導出）
 export type Step =

@@ -119,8 +119,8 @@ export const useOoX = () => {
     setCalculateResult(null);
     setResolvedBlock([]);
 
-    const orderQuestions = questions.filter((q) => q.kind === "order");
-    const healthQuestions = questions.filter((q) => q.kind === "health");
+    const orderQuestions = questions.filter((q) => q.type === "comparison");
+    const healthQuestions = questions.filter((q) => q.type === "diagnostic");
     const unanswered = orderQuestions.filter((q) => !answers[q.id]);
 
     if (unanswered.length > 0) {
