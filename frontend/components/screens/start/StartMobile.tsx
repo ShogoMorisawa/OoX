@@ -50,8 +50,8 @@ export default function StartMobile({
               <Image
                 src="/images/cells/left_Si.png"
                 alt="Blue Cell"
-                width={100}
-                height={100}
+                width={120}
+                height={120}
                 className="object-contain drop-shadow-md"
               />
             </div>
