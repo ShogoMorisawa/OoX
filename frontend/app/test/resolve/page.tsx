@@ -32,8 +32,8 @@ export default function TestResolvePage() {
 
   // 葛藤ブロックを抽出（最初の配列要素）
   const conflictBlock: FunctionCode[] =
-    (MOCK_CALCULATE_RESULT.order.find(
-      (el) => Array.isArray(el)
+    (MOCK_CALCULATE_RESULT.order.find((el) =>
+      Array.isArray(el)
     ) as FunctionCode[]) || [];
 
   const handleSelectOrder = (func: FunctionCode) => {
@@ -48,10 +48,6 @@ export default function TestResolvePage() {
   const handleConfirm = () => {
     console.log("決定ボタンがクリックされました（テスト用）");
     console.log("解決された順序:", resolvedBlock);
-  };
-
-  const handleDescribe = () => {
-    console.log("葛藤が解決されました（テスト用）");
   };
 
   return (
@@ -76,9 +72,7 @@ export default function TestResolvePage() {
         onSelectOrder={handleSelectOrder}
         onReset={handleReset}
         onConfirm={handleConfirm}
-        onDescribe={handleDescribe}
       />
     </div>
   );
 }
-
