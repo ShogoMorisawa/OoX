@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 
 import {
   FunctionCode,
@@ -23,6 +22,7 @@ import { buildHealthScores } from "@/lib/oox/health";
 import { buildDefaultTierMap, isCompleteTierMap } from "@/lib/oox/tier";
 import { calculate } from "@/lib/api/calculate";
 import { checkJobStatus, startDescribeJob } from "@/lib/api/describe";
+import { saveResult } from "@/lib/api/results";
 import { fetchQuestions } from "@/lib/supabase/questions";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
@@ -168,17 +168,22 @@ export const useOoX = () => {
     setTierMap((prev) => ({ ...prev, [func]: tier }));
   };
 
-  const handleConfirmHierarchy = async () => {
+  const handleConfirmHierarchy = async (
+    completeTierMap?: Record<FunctionCode, Tier>
+  ) => {
     if (!calculateResult) return;
 
+    // completeTierMapが渡されている場合はそれを使用、なければstateのtierMapを使用
+    const finalTierMap = completeTierMap || tierMap;
+
     // 実行前チェック: tierMapが完全かどうかを確認
-    if (!isCompleteTierMap(tierMap)) {
+    if (!isCompleteTierMap(finalTierMap)) {
       throw new Error("TierMap is incomplete");
     }
 
     // finalOrderはstateとして保存済みなのでそのまま使用
     // healthStatusはcalculateResult.healthをそのまま使用
-    await handleDescribe(finalOrder, tierMap, calculateResult.health);
+    await handleDescribe(finalOrder, finalTierMap, calculateResult.health);
   };
 
   const handleDescribe = async (
@@ -226,7 +231,7 @@ export const useOoX = () => {
       const iconUrl = getIcon(dominant, second);
 
       // DBへ保存
-      const { error } = await supabase.from("user_results").insert({
+      await saveResult({
         answers: answers,
         function_order: finalOrder,
         tier_map: finalTierMap,
@@ -238,11 +243,10 @@ export const useOoX = () => {
         icon_url: iconUrl,
       });
 
-      if (error) throw error;
       console.log("Result saved to Supabase successfully!");
     } catch (e) {
-      console.error("Auto Save Error:", e);
-      // 自動保存失敗時はアラートを出さず、ログだけ残すか、サイレントに再試行するなどがスマート
+      console.error("Save Result Error:", e);
+      alert("結果の保存に失敗しました");
     }
   };
 
