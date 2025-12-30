@@ -66,13 +66,13 @@ export default function QuizPC(props: QuizViewProps) {
 
         <div className={`w-full grid ${gridColsClass} gap-4 shrink-0`}>
           {choices.map((c) => {
-            const isSelected = currentAnswer === c.id;
+            const isSelected = currentAnswer === c.choiceId;
 
             return (
               <button
                 key={c.id}
                 type="button"
-                onClick={() => onSelect(c.id)}
+                onClick={() => onSelect(c.choiceId)}
                 disabled={loading}
                 className={[
                   "relative group rounded-[2.5rem] flex flex-col items-center justify-center transition-all duration-300",
