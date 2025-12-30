@@ -118,7 +118,7 @@ Route::post('/results', function (Request $request) {
         'second_function' => 'required|string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se',
         'title' => 'required|string|max:255',
         'description' => 'required|string',
-        'icon_url' => 'required|string|url',
+        'icon_url' => 'required|string',
     ]);
 
     // 2. configから値を取得
