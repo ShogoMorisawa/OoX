@@ -57,7 +57,6 @@ functions:
             - httpApi:
                 path: '*'
                 method: '*'
-                cors: true # 👈 これが必要です！
 
     # This function lets us run artisan commands in Lambda
     artisan:
