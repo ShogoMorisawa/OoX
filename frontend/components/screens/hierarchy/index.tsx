@@ -29,7 +29,7 @@ type Props = {
   loading: boolean;
   loadingMessage: string;
   onUpdateTier: (func: FunctionCode, tier: Tier) => void; // 互換性のため残す
-  onConfirmHierarchy: () => void;
+  onConfirmHierarchy: (completeTierMap?: Record<FunctionCode, Tier>) => void;
 };
 
 export default function HierarchyScreenContainer({
