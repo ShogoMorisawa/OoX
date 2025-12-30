@@ -1,4 +1,4 @@
-import { Question, SupabaseChoice, SupabaseQuestion } from "@/types/oox";
+import { Question, SupabaseQuestion } from "@/types/oox";
 import { supabase } from "@/lib/supabaseClient";
 
 export async function fetchQuestions(): Promise<Question[]> {

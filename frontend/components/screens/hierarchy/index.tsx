@@ -114,7 +114,8 @@ export default function HierarchyScreenContainer({
     Object.entries(currentTierMap).forEach(([func, tier]) => {
       onUpdateTier(func as FunctionCode, tier);
     });
-    onConfirmHierarchy();
+    // currentTierMapを直接渡す（状態更新の非同期性を回避）
+    onConfirmHierarchy(currentTierMap);
   };
 
   const viewProps: HierarchyViewProps = {
