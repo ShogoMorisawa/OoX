@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-
 import { QuizViewProps } from "./index";
 
 export default function QuizMobile(props: QuizViewProps) {
@@ -11,7 +10,6 @@ export default function QuizMobile(props: QuizViewProps) {
     currentQuestion,
     currentAnswer,
     isLastQuestion,
-    progress,
     loading,
     loadingMessage,
     quicksandClassName,
@@ -21,51 +19,77 @@ export default function QuizMobile(props: QuizViewProps) {
   } = props;
 
   const choices = currentQuestion.choices;
-  const gridColsClass = choices.length === 3 ? "grid-cols-3" : "grid-cols-2";
+  // 進捗率の計算 (0% -> 100%)
+  const progressPercent = ((index + 1) / totalQuestions) * 100;
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden font-sans flex items-center justify-center py-10">
+    <div className="min-h-screen w-full relative overflow-hidden font-sans flex flex-col items-center py-6">
+      {/* 1. 背景レイヤー */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: "url(/images/oox_background.png)" }}
       />
-      <div className="absolute inset-0 bg-white/20 pointer-events-none" />
+      {/* 全体のトーンを整えるフィルター */}
+      <div className="absolute inset-0 bg-sky-50/20 pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-md px-6 flex flex-col items-center gap-6">
-        <div className="w-full relative min-h-[12rem] flex items-center justify-center shrink-0">
-          <div className="absolute inset-0 w-full h-full z-0 pointer-events-none drop-shadow-lg">
+      {/* メインコンテンツコンテナ */}
+      <div className="relative z-10 w-full max-w-md px-5 flex flex-col h-full grow">
+        {/* 2. ヘッダーエリア (進捗バー) */}
+        <div className="w-full flex flex-col items-center mb-4 shrink-0">
+          <p className="text-xs font-bold tracking-widest text-slate-500 mb-2 uppercase">
+            QUESTION {index + 1} / {totalQuestions}
+          </p>
+          <div className="w-48 h-1.5 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm border border-white/20">
+            <div
+              className="h-full bg-gradient-to-r from-sky-300 to-sky-400 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* 3. キャラクターエリア (指示によりコメントアウト中) */}
+        <div className="flex justify-center mb-[-12px] z-20 shrink-0 h-20 items-end">
+          <div className="relative w-24 h-24 animate-[float_4s_ease-in-out_infinite]">
             <Image
-              src="/images/oox_quiz_question.png"
-              alt="Question bubble"
+              src="/images/hie_cells/king/left_Te.png"
+              alt="Character"
               fill
-              className="object-fill"
+              className="object-contain drop-shadow-lg"
               priority
             />
           </div>
+        </div>
 
-          <div className="relative z-10 p-8 text-center pb-10">
-            <p className="text-gray-500 text-xs font-bold tracking-widest mb-3 uppercase">
-              Question {index + 1} / {totalQuestions}
-            </p>
+        {/* 4. 質問エリア (すりガラス吹き出し) */}
+        <div className="relative w-full mb-6 shrink-0">
+          <div className="relative bg-white/50 backdrop-blur-md rounded-[2rem] p-6 shadow-xl border border-white/60 text-center min-h-[140px] flex flex-col items-center justify-center">
+            {/* 吹き出しのしっぽ (CSSトリック) */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white/50 backdrop-blur-md border-t border-l border-white/60 rotate-45" />
 
-            <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-widest">
-              {currentQuestion.type === "comparison" ? "比較" : "診断"}
-            </p>
+            {/* 質問タイプラベル */}
+            <span className="absolute top-4 text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">
+              {currentQuestion.type === "comparison"
+                ? "COMPARISON"
+                : "DIAGNOSIS"}
+            </span>
 
-            <h2 className="text-slate-800 text-lg md:text-xl font-medium leading-relaxed tracking-wide">
+            {/* 質問本文 */}
+            <h2 className="relative z-10 text-slate-800 font-medium leading-relaxed text-sm md:text-base tracking-wide mt-4">
               {currentQuestion.text}
             </h2>
           </div>
         </div>
 
+        {/* ローディング表示 */}
         {loading && (
-          <div className="text-xs text-slate-600 font-medium">
+          <div className="text-center text-xs text-slate-600 font-medium animate-pulse mb-2">
             {loadingMessage}
           </div>
         )}
 
-        <div className={`w-full grid ${gridColsClass} gap-4 shrink-0`}>
-          {choices.map((c) => {
+        {/* 5. 回答エリア (縦積みリスト) */}
+        <div className="flex flex-col gap-3 w-full mb-4 grow justify-start">
+          {choices.map((c, i) => {
             const isSelected = currentAnswer === c.choiceId;
 
             return (
@@ -75,38 +99,37 @@ export default function QuizMobile(props: QuizViewProps) {
                 onClick={() => onSelect(c.choiceId)}
                 disabled={loading}
                 className={[
-                  "relative group rounded-[2.5rem] flex flex-col items-center justify-center transition-all duration-300",
-                  "min-h-[280px] h-[280px] w-full overflow-hidden",
-                  isSelected ? "scale-105" : "hover:-translate-y-1",
+                  "group relative w-full p-5 rounded-2xl text-left transition-all duration-200",
+                  "bg-white/40 backdrop-blur-md border",
+                  // 選択状態のスタイル切り替え
+                  isSelected
+                    ? "bg-sky-100/60 border-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.3)] scale-[1.02]"
+                    : "border-white/50 shadow-sm hover:bg-white/60 hover:scale-[1.01] hover:shadow-md",
                   loading ? "opacity-60" : "",
                 ].join(" ")}
               >
-                <div className="absolute inset-0 w-full h-full z-0 rounded-[2.5rem] overflow-hidden drop-shadow-md">
-                  <Image
-                    src="/images/oox_quiz_choice-lightBlue.png"
-                    alt={`Choice ${c.id} background`}
-                    fill
-                    className="object-cover"
-                  />
+                <div className="flex items-center gap-4">
+                  {/* A/B ラベル */}
                   <div
-                    className={[
-                      "absolute inset-0 mix-blend-overlay transition-opacity duration-300",
+                    className={`
+                    flex items-center justify-center w-8 h-8 rounded-full shrink-0 font-bold text-sm
+                    ${quicksandClassName}
+                    ${
                       isSelected
-                        ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-50",
-                      "bg-sky-500/20",
-                    ].join(" ")}
-                  />
-                </div>
-
-                <div className="relative z-10 flex flex-col items-center justify-center p-5 w-full h-full">
-                  <span
-                    className={`text-xl font-bold mb-2 shrink-0 ${quicksandClassName} text-slate-700`}
+                        ? "bg-sky-500 text-white"
+                        : "bg-white/50 text-sky-600"
+                    }
+                  `}
                   >
-                    {c.choiceId}
-                  </span>
+                    {i === 0 ? "A" : "B"}
+                  </div>
 
-                  <span className="text-xs md:text-sm font-bold text-center leading-relaxed text-slate-700 whitespace-pre-line break-words px-3 w-full">
+                  {/* 選択肢テキスト */}
+                  <span
+                    className={`text-sm font-medium leading-relaxed ${
+                      isSelected ? "text-slate-900" : "text-slate-700"
+                    }`}
+                  >
                     {c.text}
                   </span>
                 </div>
@@ -115,12 +138,13 @@ export default function QuizMobile(props: QuizViewProps) {
           })}
         </div>
 
-        <div className="flex w-full justify-between items-center px-2 relative z-20 h-10 shrink-0">
+        {/* 6. ナビゲーション (下部固定) */}
+        <div className="flex w-full justify-between items-center px-2 pb-4 mt-auto shrink-0 z-20">
           <button
             type="button"
             onClick={onPrev}
             disabled={index === 0 || loading}
-            className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-0 transition-colors font-medium"
+            className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-0 transition-colors font-medium px-4 py-2"
           >
             ← Back
           </button>
@@ -130,52 +154,11 @@ export default function QuizMobile(props: QuizViewProps) {
               type="button"
               onClick={onNext}
               disabled={loading}
-              className="px-6 py-2 rounded-full bg-white text-sky-600 font-bold text-sm shadow-md hover:shadow-lg transition-all animate-bounce-slow disabled:opacity-60"
+              className="px-8 py-3 rounded-full bg-white text-sky-600 font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all animate-bounce-slow disabled:opacity-60 border border-sky-100"
             >
               {isLastQuestion ? "結果を見る" : "Next →"}
             </button>
           )}
-        </div>
-
-        <div className="relative w-full h-40 mt-4 flex justify-center items-end shrink-0">
-          <div className="absolute left-4 bottom-8 w-20 h-20 animate-float-medium z-20">
-            <Image
-              src="/images/oox_start_cell-red.png"
-              alt="Red Cell"
-              width={100}
-              height={100}
-              className="object-contain drop-shadow-xl"
-            />
-          </div>
-
-          <div className="absolute right-4 bottom-12 w-20 h-20 animate-float-fast z-20">
-            <Image
-              src="/images/oox_start_cell-lightBlue.png"
-              alt="Blue Cell"
-              width={80}
-              height={80}
-              className="object-contain drop-shadow-xl"
-            />
-          </div>
-
-          <div className="relative z-10 w-32 h-40 flex items-end justify-center">
-            {/* TODO: 進捗に応じて水が溜まるアニメーション（未実装のためコメントアウト） */}
-            {/* <div
-              className="absolute bottom-2 w-[80%] bg-sky-300/40 rounded-b-[2rem] overflow-hidden transition-all duration-1000 ease-in-out"
-              style={{ height: `${20 + progress * 70}%` }}
-            >
-              <div className="absolute top-0 left-0 w-[200%] h-4 bg-sky-200/50 animate-wave opacity-70" />
-              <div className="w-full h-full bg-gradient-to-t from-sky-400/30 to-sky-100/10" />
-            </div> */}
-            <div className="absolute inset-0 w-full h-full">
-              <Image
-                src="/images/oox_start_pod.png"
-                alt="Pod"
-                fill
-                className="object-contain opacity-90"
-              />
-            </div>
-          </div>
         </div>
       </div>
     </div>
