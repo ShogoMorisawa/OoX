@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 import {
   FunctionCode,
+  OrderElement,
   CalculateResponse,
   DescribeResponse,
   Step,
@@ -21,6 +22,7 @@ import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
 import { buildMatchesFromAnswers } from "@/lib/oox/matches";
 import { buildHealthScores } from "@/lib/oox/health";
 import { buildDefaultTierMap, isCompleteTierMap } from "@/lib/oox/tier";
+import { calculate } from "@/lib/api/calculate";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -174,33 +176,13 @@ export const useOoX = () => {
     const matches = buildMatchesFromAnswers(orderQuestions, answers);
     const healthScores = buildHealthScores(healthQuestions, answers);
 
-    const url = `${API_BASE_URL}/api/calculate`;
-    const requestBody = {
-      matches,
-      health_scores: healthScores,
-    };
-
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text().catch(() => "Unknown error");
-        throw new Error(
-          `Calc API error: ${res.status} ${res.statusText}\n${errorText}`
-        );
-      }
-
-      const data: CalculateResponse = await res.json();
+      const data = await calculate(matches, healthScores);
       setCalculateResult(data);
 
-      const conflictIndex = data.order.findIndex((el) => Array.isArray(el));
+      const conflictIndex = data.order.findIndex((el: OrderElement) =>
+        Array.isArray(el)
+      );
       const hasConflict = conflictIndex !== -1;
 
       if (hasConflict) {
