@@ -4,7 +4,7 @@ import { FunctionCode, OrderElement, Tier } from "@/types/oox";
 /**
  * 型ガード: tierMapが完全かどうかをチェック
  */
-function isCompleteTierMap(
+export function isCompleteTierMap(
   map: Partial<Record<FunctionCode, Tier>>
 ): map is Record<FunctionCode, Tier> {
   const allFunctions: FunctionCode[] = [

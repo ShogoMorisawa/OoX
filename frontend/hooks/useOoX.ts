@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabaseClient";
 
 import {
   FunctionCode,
-  OrderElement,
   CalculateResponse,
   DescribeResponse,
   Step,
@@ -21,7 +20,7 @@ import { API_BASE_URL, POLL_INTERVAL } from "@/constants/api";
 
 import { buildMatchesFromAnswers } from "@/lib/oox/matches";
 import { buildHealthScores } from "@/lib/oox/health";
-import { buildDefaultTierMap, mergeTierMap } from "@/lib/oox/tier";
+import { buildDefaultTierMap, isCompleteTierMap } from "@/lib/oox/tier";
 
 type ChoiceId = Choice["choiceId"]; // "A" | "B"
 
@@ -47,6 +46,7 @@ export const useOoX = () => {
   const [loadingMessage, setLoadingMessage] = useState("");
   const [conflictBlock, setConflictBlock] = useState<FunctionCode[]>([]);
   const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
+  const [finalOrder, setFinalOrder] = useState<FunctionCode[]>([]);
 
   // --- Effect: Supabaseから質問を取得 ---
   useEffect(() => {
@@ -146,6 +146,10 @@ export const useOoX = () => {
         const block = newOrder[nextConflictIndex] as FunctionCode[];
         setConflictBlock(block);
       } else {
+        // すべての葛藤が解決された場合、finalOrderを確定
+        const flattenedOrder = newOrder.flat() as FunctionCode[];
+        setFinalOrder(flattenedOrder);
+
         setStep(OOX_STEPS.HIERARCHY);
       }
     }
@@ -201,10 +205,15 @@ export const useOoX = () => {
 
       if (hasConflict) {
         const block = data.order[conflictIndex] as FunctionCode[];
+
         setConflictBlock(block);
         setStep(OOX_STEPS.RESOLVE);
         setLoading(false);
       } else {
+        // 葛藤がない場合、finalOrderを確定
+        const flattenedOrder = data.order.flat() as FunctionCode[];
+        setFinalOrder(flattenedOrder);
+
         const defaultTierMap = buildDefaultTierMap(data.order);
         setTierMap(defaultTierMap);
         setStep(OOX_STEPS.HIERARCHY);
@@ -224,22 +233,26 @@ export const useOoX = () => {
   const handleConfirmHierarchy = async () => {
     if (!calculateResult) return;
 
-    const finalOrder = calculateResult.order.flat() as FunctionCode[];
-    const finalTierMap = mergeTierMap(calculateResult.order, tierMap);
+    // 実行前チェック: tierMapが完全かどうかを確認
+    if (!isCompleteTierMap(tierMap)) {
+      throw new Error("TierMap is incomplete");
+    }
 
-    await handleDescribe(finalOrder, finalTierMap, calculateResult.health);
+    // finalOrderはstateとして保存済みなのでそのまま使用
+    // healthStatusはcalculateResult.healthをそのまま使用
+    await handleDescribe(finalOrder, tierMap, calculateResult.health);
   };
 
   const handleDescribe = async (
     finalOrder: FunctionCode[],
-    finalTierMap: Record<FunctionCode, Tier>,
-    finalHealthStatus: Record<FunctionCode, "O" | "o" | "x">
+    tierMap: Record<FunctionCode, Tier>,
+    healthStatus: Record<FunctionCode, "O" | "o" | "x">
   ) => {
     setLoading(true);
     setLoadingMessage("Geminiがあなたの魂を言語化しています...");
 
     const url = `${API_BASE_URL}/api/describe`;
-    const requestBody = { finalOrder, finalHealthStatus, finalTierMap };
+    const requestBody = { finalOrder, healthStatus, tierMap };
 
     try {
       const res = await fetch(url, {
@@ -367,6 +380,7 @@ export const useOoX = () => {
     setDescribeResult(null);
     setConflictBlock([]);
     setResolvedBlock([]);
+    setFinalOrder([]);
   };
 
   return {
