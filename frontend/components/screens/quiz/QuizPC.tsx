@@ -103,7 +103,7 @@ export default function QuizPC(props: QuizViewProps) {
                   <span
                     className={`text-xl font-bold mb-2 shrink-0 ${quicksandClassName} text-slate-700`}
                   >
-                    {c.id}
+                    {c.choiceId}
                   </span>
 
                   <span className="text-xs md:text-sm font-bold text-center leading-relaxed text-slate-700 whitespace-pre-line break-words px-3 w-full">
@@ -148,7 +148,7 @@ export default function QuizPC(props: QuizViewProps) {
             />
           </div>
 
-        <div className="absolute right-4 bottom-12 w-20 h-20 animate-float-fast z-20">
+          <div className="absolute right-4 bottom-12 w-20 h-20 animate-float-fast z-20">
             <Image
               src="/images/oox_start_cell-lightBlue.png"
               alt="Blue Cell"

@@ -103,7 +103,7 @@ export default function QuizMobile(props: QuizViewProps) {
                   <span
                     className={`text-xl font-bold mb-2 shrink-0 ${quicksandClassName} text-slate-700`}
                   >
-                    {c.id}
+                    {c.choiceId}
                   </span>
 
                   <span className="text-xs md:text-sm font-bold text-center leading-relaxed text-slate-700 whitespace-pre-line break-words px-3 w-full">
