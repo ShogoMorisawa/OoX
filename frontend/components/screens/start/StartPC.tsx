@@ -36,7 +36,7 @@ export default function StartPC({ onStart, titleClassName }: StartViewProps) {
           <div className="relative w-full h-full">
             <div className="absolute top-[25%] left-[20%] w-24 h-24 animate-float-medium">
               <Image
-                src="/images/cells/oox_start_cell-red.png"
+                src="/images/cells/right_Te.png"
                 alt="Red Cell"
                 width={120}
                 height={120}
@@ -45,7 +45,7 @@ export default function StartPC({ onStart, titleClassName }: StartViewProps) {
             </div>
             <div className="absolute bottom-[25%] right-[15%] w-20 h-20 animate-float-slow">
               <Image
-                src="/images/cells/oox_cell_Si_left.png"
+                src="/images/cells/left_Si.png"
                 alt="Blue Cell"
                 width={100}
                 height={100}
