@@ -68,31 +68,3 @@ export function buildDefaultTierMap(
   // 型ガードにより、TypeScriptは defaultTierMap が Record<FunctionCode, Tier> であることを理解する
   return defaultTierMap;
 }
-
-/**
- * userTierMapとデフォルトのtierMapをマージして完成版を作成
- */
-export function mergeTierMap(
-  order: OrderElement[],
-  userTierMap?: Partial<Record<FunctionCode, Tier>>
-): Record<FunctionCode, Tier> {
-  const defaultTierMap = buildDefaultTierMap(order);
-  const flatOrder = order.flat() as FunctionCode[];
-
-  if (!isFunctionCodeArray(flatOrder)) {
-    throw new Error("Order contains invalid function codes");
-  }
-
-  const merged: Record<FunctionCode, Tier> = {} as Record<FunctionCode, Tier>;
-
-  flatOrder.forEach((func) => {
-    merged[func] = userTierMap?.[func] || defaultTierMap[func];
-  });
-
-  // 実行時チェック: すべての機能が設定されていることを確認
-  if (!isCompleteTierMap(merged)) {
-    throw new Error("TierMap is incomplete after merge");
-  }
-
-  return merged;
-}
