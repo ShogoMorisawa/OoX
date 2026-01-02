@@ -6,7 +6,7 @@ export function getIcon(dominant: FunctionCode, second: FunctionCode): string {
 }
 
 export function getCellImage(func: FunctionCode): string {
-  return `/images/cells/oox_cell_${func}_left.png`;
+  return `/images/cells/left_${func}.png`;
 }
 
 export function getHierarchyCellImage(
