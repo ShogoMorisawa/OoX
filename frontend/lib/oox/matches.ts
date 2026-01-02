@@ -34,7 +34,7 @@ export function buildMatchesFromAnswers(
     // currentChoiceを取得。
     const choiceId = answers[question.id];
     const currentChoice = question.choices.find(
-      (choice) => choice.id === choiceId
+      (choice) => choice.choiceId === choiceId
     );
 
     // currentChoiceかrelatedFunctionCodeが存在しない場合はスキップ。

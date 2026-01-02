@@ -1,4 +1,9 @@
-import { Question, DiagnosticQuestion, Choice, FunctionCode } from "@/types/oox";
+import {
+  Question,
+  DiagnosticQuestion,
+  Choice,
+  FunctionCode,
+} from "@/types/oox";
 
 type ChoiceId = Choice["choiceId"];
 
@@ -29,7 +34,7 @@ export function buildHealthScores(
     // 回答がない場合はスキップ。
     if (!choiceId) continue;
 
-    const choice = q.choices.find((c) => c.id === choiceId);
+    const choice = q.choices.find((c) => c.choiceId === choiceId);
     if (choice) {
       healthScores[diagnosticQuestion.leftFunctionCode] += choice.scoreValue;
     }
