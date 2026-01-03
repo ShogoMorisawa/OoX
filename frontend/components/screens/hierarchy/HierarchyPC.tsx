@@ -233,7 +233,7 @@ export default function HierarchyPC({
                           onClick={() =>
                             handleMove(i as 0 | 1 | 2, borderPos, "up")
                           }
-                          disabled={!canMoveUp}
+                          disabled={loading || !canMoveUp}
                           className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 transition-colors"
                         >
                           ▲
@@ -242,7 +242,7 @@ export default function HierarchyPC({
                           onClick={() =>
                             handleMove(i as 0 | 1 | 2, borderPos, "down")
                           }
-                          disabled={!canMoveDown}
+                          disabled={loading || !canMoveDown}
                           className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 transition-colors"
                         >
                           ▼

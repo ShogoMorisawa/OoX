@@ -84,6 +84,9 @@ export default function HierarchyScreenContainer({
 
   // 5. 境界線を動かすロジック
   const handleBorderChange = (borderIndex: 0 | 1 | 2, newPosition: number) => {
+    // ローディング中は境界線の変更を禁止
+    if (loading) return;
+
     setBorders((prev) => {
       const next = [...prev];
       // 制約: 線同士は追い越せない & 範囲外に行かない

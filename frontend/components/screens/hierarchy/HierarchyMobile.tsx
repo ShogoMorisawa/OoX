@@ -209,9 +209,9 @@ export default function HierarchyMobile({
               <div className="absolute -top-7 flex items-center gap-3">
                 <button
                   onClick={() => handleMove(i as 0 | 1 | 2, borderPos, "up")}
-                  disabled={!canMoveUp}
+                  disabled={loading || !canMoveUp}
                   className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 transition-all bg-white ${
-                    !canMoveUp
+                    loading || !canMoveUp
                       ? "opacity-30 cursor-not-allowed"
                       : "active:scale-90"
                   }`}
@@ -228,9 +228,9 @@ export default function HierarchyMobile({
 
                 <button
                   onClick={() => handleMove(i as 0 | 1 | 2, borderPos, "down")}
-                  disabled={!canMoveDown}
+                  disabled={loading || !canMoveDown}
                   className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 transition-all bg-white ${
-                    !canMoveDown
+                    loading || !canMoveDown
                       ? "opacity-30 cursor-not-allowed"
                       : "active:scale-90"
                   }`}
