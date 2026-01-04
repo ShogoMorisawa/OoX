@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "@/constants/api";
 import { FunctionCode, Tier } from "@/types/oox";
+import { apiRequest } from "./client";
 
 export type SaveResultRequest = {
   answers: Record<string, "A" | "B">;
@@ -17,21 +17,8 @@ export type SaveResultRequest = {
 };
 
 export async function saveResult(data: SaveResultRequest): Promise<void> {
-  const url = `${API_BASE_URL}/api/results`;
-
-  const res = await fetch(url, {
+  return apiRequest<void>("/api/results", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(data),
+    body: data,
   });
-
-  if (!res.ok) {
-    const errorText = await res.text().catch(() => "Unknown error");
-    throw new Error(
-      `Save result API error: ${res.status} ${res.statusText}\n${errorText}`
-    );
-  }
 }
