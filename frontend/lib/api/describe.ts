@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "@/constants/api";
 import { DescribeResponse, FunctionCode, Tier } from "@/types/oox";
+import { ApiError, apiRequest } from "./client";
 
 export type JobStatusResponse =
   | { status: "pending" }
@@ -11,43 +11,28 @@ export async function startDescribeJob(
   healthStatus: Record<FunctionCode, "O" | "o" | "x">,
   tierMap: Record<FunctionCode, Tier>
 ): Promise<string> {
-  const url = `${API_BASE_URL}/api/describe`;
-  const requestBody = { finalOrder, healthStatus, tierMap };
-
-  const res = await fetch(url, {
+  const data = await apiRequest<{ job_id: string }>("/api/describe", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+    body: {
+      finalOrder,
+      healthStatus,
+      tierMap,
     },
-    body: JSON.stringify(requestBody),
   });
 
-  if (!res.ok) {
-    const errorText = await res.text().catch(() => "Unknown error");
-    throw new Error(
-      `Describe API error: ${res.status} ${res.statusText}\n${errorText}`
-    );
-  }
-
-  const { job_id: jobId } = await res.json();
-  if (!jobId) throw new Error("ジョブIDの取得に失敗しました");
-
-  return jobId;
+  if (!data.job_id) throw new Error("ジョブIDの取得に失敗しました");
+  return data.job_id;
 }
 
 export async function checkJobStatus(
   jobId: string
 ): Promise<JobStatusResponse> {
-  const url = `${API_BASE_URL}/api/describe/status/${jobId}`;
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
-  if (!res.ok) {
-    if (res.status === 404) throw new Error("ジョブが見つかりません");
-    throw new Error(`Status check failed: ${res.status}`);
+  try {
+    return await apiRequest<JobStatusResponse>(`/api/describe/status/${jobId}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      throw new Error("ジョブが見つかりません");
+    }
+    throw error;
   }
-  return await res.json();
 }
