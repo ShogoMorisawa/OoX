@@ -20,17 +20,55 @@ Route::get('/hello', function () {
 });
 
 Route::post('/calculate', function (Request $request, CalculateService $service) {
-    $matches = $request->json('matches', []);
+    // 1. フロントから新しい形式の回答データを受け取る
+    // フロント実装に合わせてキー名は 'answers' (RichAnswer[])
+    $answers = $request->json('answers', []);
     $healthScores = $request->json('health_scores', []);
 
-    $graph = $service->buildGraph($matches);
-    $sccs = $service->findSCCs($graph);
-    $order = $service->getFinalOrder($matches);
+    // 2. 質問定義(Master Data)をSupabaseから取得する
+    // 勝敗判定のために「対戦相手(Loser)が誰だったか」を知る必要があるため
+    $supabaseUrl = config('services.supabase.url');
+    $supabaseKey = config('services.supabase.key');
 
+    try {
+        $response = Http::withHeaders([
+            'apikey' => $supabaseKey,
+            'Authorization' => "Bearer {$supabaseKey}",
+            'Content-Type' => 'application/json',
+        ])->get("{$supabaseUrl}/rest/v1/questions", [
+            'select' => 'id,type,left_function_code,right_function_code',
+        ]);
+
+        if ($response->failed()) {
+            return response()->json([
+                'error' => 'Failed to fetch questions from Supabase',
+                'details' => $response->json() ?? $response->body(),
+            ], 500);
+        }
+
+        $questions = $response->json() ?? [];
+
+        // IDをキーにしたマップ形式に変換
+        $questionsMap = [];
+        foreach ($questions as $question) {
+            $questionsMap[$question['id']] = $question;
+        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Error fetching questions',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+
+    // 3. CalculateServiceで「最高の順序」を計算
+    $bestOrder = $service->calculateBestOrder($answers, $questionsMap);
+
+    // 4. 健全度計算 (既存ロジック)
     $health = $service->calculateHealthStatus($healthScores);
 
+    // 5. 結果を返す
     return response()->json([
-        'order' => $order,
+        'order' => $bestOrder, // これが [Ni, Ti, Fe...] のような最適化された配列になります
         'health' => $health,
     ]);
 });
