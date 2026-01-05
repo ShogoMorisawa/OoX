@@ -10,6 +10,7 @@ import {
   Tier,
   Question,
   Choice,
+  AnswerData,
 } from "@/types/oox";
 
 import { OOX_STEPS } from "@/constants/steps";
@@ -17,7 +18,10 @@ import { OOX_TIER } from "@/constants/tier";
 import { getIcon } from "@/constants/icons";
 import { POLL_INTERVAL } from "@/constants/api";
 
-import { buildMatchesFromAnswers } from "@/lib/oox/matches";
+import {
+  buildRichAnswersFromState,
+  buildAllRichAnswers,
+} from "@/lib/oox/matches";
 import { buildHealthScores } from "@/lib/oox/health";
 import { buildDefaultTierMap, isCompleteTierMap } from "@/lib/oox/tier";
 import { calculate } from "@/lib/api/calculate";
@@ -33,7 +37,7 @@ export const useOoX = () => {
 
   // --- State ---
   const [step, setStep] = useState<Step>(OOX_STEPS.START);
-  const [answers, setAnswers] = useState<Record<string, ChoiceId>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerData>>({});
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
@@ -75,8 +79,15 @@ export const useOoX = () => {
     setStep(OOX_STEPS.QUIZ);
   };
 
-  const handleChange = (id: string, choiceId: ChoiceId) => {
-    setAnswers((prev) => ({ ...prev, [id]: choiceId }));
+  const handleChange = (
+    id: string,
+    choiceId: ChoiceId,
+    responseTimeMs: number
+  ) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [id]: { choiceId, responseTimeMs },
+    }));
   };
 
   const handleSelectOrder = (func: FunctionCode) => {
@@ -130,11 +141,11 @@ export const useOoX = () => {
       return;
     }
 
-    const matches = buildMatchesFromAnswers(orderQuestions, answers);
+    const richAnswers = buildRichAnswersFromState(orderQuestions, answers);
     const healthScores = buildHealthScores(healthQuestions, answers);
 
     try {
-      const data = await calculate(matches, healthScores);
+      const data = await calculate(richAnswers, healthScores);
       setCalculateResult(data);
 
       const conflictIndex = data.order.findIndex((el: OrderElement) =>
@@ -234,9 +245,12 @@ export const useOoX = () => {
       // ブラウザIDを取得（なければ新規生成）
       const browserId = getOrCreateBrowserId();
 
+      // 全質問の回答をRichAnswer形式に変換
+      const allRichAnswers = buildAllRichAnswers(questions, answers);
+
       // DBへ保存
       await saveResult({
-        answers: answers,
+        answers: allRichAnswers,
         function_order: finalOrder,
         tier_map: finalTierMap,
         health_status: calcRes.health,

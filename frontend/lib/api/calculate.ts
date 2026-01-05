@@ -1,15 +1,14 @@
-import { CalculateResponse, FunctionCode } from "@/types/oox";
-import { Match } from "../oox/matches";
+import { CalculateResponse, FunctionCode, RichAnswer } from "@/types/oox";
 import { apiRequest } from "./client";
 
 export async function calculate(
-  matches: Match[],
+  answers: RichAnswer[],
   healthScores: Record<FunctionCode, number>
 ): Promise<CalculateResponse> {
   return apiRequest<CalculateResponse>("/api/calculate", {
     method: "POST",
     body: {
-      matches,
+      answers,
       health_scores: healthScores,
     },
   });

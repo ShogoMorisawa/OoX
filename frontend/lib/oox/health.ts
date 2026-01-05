@@ -1,15 +1,13 @@
 import {
   Question,
   DiagnosticQuestion,
-  Choice,
   FunctionCode,
+  AnswerData,
 } from "@/types/oox";
-
-type ChoiceId = Choice["choiceId"];
 
 export function buildHealthScores(
   questions: Question[],
-  answers: Record<string, ChoiceId>
+  answers: Record<string, AnswerData>
 ): Record<FunctionCode, number> {
   const healthScores: Record<FunctionCode, number> = {
     Ni: 0,
@@ -30,11 +28,11 @@ export function buildHealthScores(
     // Type Guard: この時点でqはDiagnosticQuestionとして扱える
     const diagnosticQuestion = q as DiagnosticQuestion;
 
-    const choiceId = answers[q.id];
+    const answerData = answers[q.id];
     // 回答がない場合はスキップ。
-    if (!choiceId) continue;
+    if (!answerData) continue;
 
-    const choice = q.choices.find((c) => c.choiceId === choiceId);
+    const choice = q.choices.find((c) => c.choiceId === answerData.choiceId);
     if (choice) {
       healthScores[diagnosticQuestion.leftFunctionCode] += choice.scoreValue;
     }

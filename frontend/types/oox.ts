@@ -92,6 +92,20 @@ export type Step =
 // 階層型（constants/tier.ts の OOX_TIER から導出）
 export type Tier = "Dominant" | "High" | "Middle" | "Low";
 
+// 回答データの型（回答時間を含む）
+export type AnswerData = {
+  choiceId: "A" | "B";
+  responseTimeMs: number;
+};
+
+// API送信用のリッチな回答データ
+export type RichAnswer = {
+  question_id: string;
+  choice_id: "A" | "B";
+  function_code: FunctionCode;
+  response_time_ms: number;
+};
+
 export type WorldUserResult = {
   id: string;
   created_at: string;

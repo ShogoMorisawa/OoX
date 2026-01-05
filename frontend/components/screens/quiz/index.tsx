@@ -1,21 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 import { Quicksand } from "next/font/google";
 
 import QuizMobile from "./QuizMobile";
 import QuizPC from "./QuizPC";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import type { Choice, Question } from "@/types/oox";
+import type { Choice, Question, AnswerData } from "@/types/oox";
 
 type AnswerValue = Choice["choiceId"];
 
 type Props = {
   questions: Question[];
-  answers: Record<string, AnswerValue>;
+  answers: Record<string, AnswerData>;
   loading: boolean;
   loadingMessage: string;
-  onChange: (questionId: string, choiceId: AnswerValue) => void;
+  onChange: (
+    questionId: string,
+    choiceId: AnswerValue,
+    responseTimeMs: number
+  ) => void;
   onCalculate: () => void;
 };
 
@@ -49,6 +53,7 @@ export default function QuizContainer({
 }: Props) {
   const isMobile = useIsMobile();
   const [index, setIndex] = useState(0);
+  const questionStartTimeRef = useRef<number | null>(null);
 
   const totalQuestions = questions.length;
   const currentQuestion = questions[index];
@@ -56,12 +61,24 @@ export default function QuizContainer({
   const isLastQuestion = index === totalQuestions - 1;
   const progress = totalQuestions > 0 ? (index + 1) / totalQuestions : 0;
   const currentAnswer = currentQuestion
-    ? answers[currentQuestion.id]
+    ? answers[currentQuestion.id]?.choiceId
     : undefined;
 
+  // 質問が表示された時点で開始時刻を記録
+  // useLayoutEffectを使用して、DOM更新直後に時刻を記録
+  useLayoutEffect(() => {
+    if (currentQuestion) {
+      questionStartTimeRef.current = performance.now();
+    }
+  }, [currentQuestion]);
+
   const handleSelect = (choiceId: AnswerValue) => {
-    if (loading || !currentQuestion) return;
-    onChange(currentQuestion.id, choiceId);
+    if (loading || !currentQuestion || !questionStartTimeRef.current) return;
+
+    const responseTime = Math.round(
+      performance.now() - questionStartTimeRef.current
+    );
+    onChange(currentQuestion.id, choiceId, responseTime);
   };
 
   const handleNext = () => {
@@ -71,6 +88,8 @@ export default function QuizContainer({
     if (!isLastQuestion) {
       setIndex((prev) => Math.min(prev + 1, totalQuestions - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
+      // 次の質問に移るので、開始時刻をリセット（useLayoutEffectで再設定される）
+      questionStartTimeRef.current = null;
     } else {
       onCalculate();
     }

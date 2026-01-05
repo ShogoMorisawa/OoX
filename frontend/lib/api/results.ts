@@ -1,8 +1,8 @@
-import { FunctionCode, Tier } from "@/types/oox";
+import { FunctionCode, Tier, RichAnswer } from "@/types/oox";
 import { apiRequest } from "./client";
 
 export type SaveResultRequest = {
-  answers: Record<string, "A" | "B">;
+  answers: RichAnswer[];
   function_order: FunctionCode[];
   tier_map: Record<FunctionCode, Tier>;
   health_status: Record<FunctionCode, "O" | "o" | "x">;
