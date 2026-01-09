@@ -61,14 +61,15 @@ Route::post('/calculate', function (Request $request, CalculateService $service)
     }
 
     // 3. CalculateServiceで「最高の順序」を計算
-    $bestOrder = $service->calculateBestOrder($answers, $questionsMap);
+    $result = $service->calculateBestOrder($answers, $questionsMap);
 
     // 4. 健全度計算 (既存ロジック)
     $health = $service->calculateHealthStatus($healthScores);
 
     // 5. 結果を返す
     return response()->json([
-        'order' => $bestOrder, // これが [Ni, Ti, Fe...] のような最適化された配列になります
+        'order' => $result['order'], // これが [Ni, Ti, Fe...] のような最適化された配列になります
+        'conflicts' => $result['conflicts'] ?? [], // 矛盾（葛藤）のリスト
         'health' => $health,
     ]);
 });

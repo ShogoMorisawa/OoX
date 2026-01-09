@@ -18,8 +18,15 @@ class CalculateService
         $matches = $this->convertAnswersToMatches($answersList, $questionsMap);
 
         // 2. 重み付きケメニー・ヤング法で最適解を計算
-        // ここが「8すくみ」を解く魔法の部分です
-        return $this->runKemenyYoung($matches);
+        $bestOrder = $this->runKemenyYoung($matches);
+
+        // 3.計算結果と回答の矛盾（葛藤）を検出する
+        $conflicts = $this->detectConflicts($bestOrder, $matches);
+
+        return [
+            'order' => $bestOrder,
+            'conflicts' => $conflicts,
+        ];
     }
 
     /**
@@ -63,6 +70,7 @@ class CalculateService
                 'winner' => $winner,
                 'loser' => $loser,
                 'time' => $time,
+                'question_id' => $qId,
             ];
         }
 
@@ -164,6 +172,43 @@ class CalculateService
                 }
             }
         }
+    }
+
+    /**
+     * 最適化された順序とユーザーの回答を比較し、矛盾（葛藤）を検出する
+     * 矛盾 = ユーザーが「AがBより上位」と答えたのに、システムの順序では「BがAより上位」になっている場合
+     */
+    protected function detectConflicts(array $bestOrder, array $matches): array
+    {
+        $conflicts = [];
+        $orderMap = array_flip($bestOrder);
+
+        foreach ($matches as $match) {
+            $userWinner = $match['winner'];
+            $userLoser = $match['loser'];
+            $time = $match['time'];
+            $questionId = $match['question_id'] ?? null;
+
+            // 矛盾の判定: ユーザーが選んだ勝者が、システムの順序では敗者（下位）になっている
+            // $orderMap[$userWinner] > $orderMap[$userLoser] の場合が矛盾
+            if (isset($orderMap[$userWinner], $orderMap[$userLoser])
+                && $orderMap[$userWinner] > $orderMap[$userLoser]) {
+                $conflicts[] = [
+                    'question_id' => $questionId,
+                    'user_winner' => $userWinner, // ユーザーが選んだ機能
+                    'system_order_winner' => $userLoser, // システムの順序では上位になっている機能
+                    'response_time_ms' => $time,
+                ];
+            }
+        }
+
+        // 回答時間が短い順（確信度が高い順）にソート
+        // 確信度が高い回答で矛盾が発生している場合、より注意が必要
+        usort($conflicts, function ($a, $b) {
+            return $a['response_time_ms'] <=> $b['response_time_ms'];
+        });
+
+        return $conflicts;
     }
 
     public function calculateHealthStatus(array $scores): array
