@@ -20,12 +20,11 @@ Route::get('/hello', function () {
 });
 
 Route::post('/calculate', function (Request $request, CalculateService $service) {
-    // 1. フロントから新しい形式の回答データを受け取る
-    // フロント実装に合わせてキー名は 'answers' (RichAnswer[])
+    // 1. 入力取得
     $answers = $request->json('answers', []);
     $healthScores = $request->json('health_scores', []);
 
-    // 2. 質問定義(Master Data)をSupabaseから取得する
+    // 2. 質問定義取得 (Supabaseから取得)
     // 勝敗判定のために「対戦相手(Loser)が誰だったか」を知る必要があるため
     $supabaseUrl = config('services.supabase.url');
     $supabaseKey = config('services.supabase.key');
@@ -60,16 +59,17 @@ Route::post('/calculate', function (Request $request, CalculateService $service)
         ], 500);
     }
 
-    // 3. CalculateServiceで「最高の順序」を計算
+    // 3. 計算実行
+    // 返り値が ['order' => ..., 'conflicts' => ...] になっています
     $result = $service->calculateBestOrder($answers, $questionsMap);
 
-    // 4. 健全度計算 (既存ロジック)
+    // 4. 健全度計算
     $health = $service->calculateHealthStatus($healthScores);
 
-    // 5. 結果を返す
+    // 5. 結果返却
     return response()->json([
-        'order' => $result['order'], // これが [Ni, Ti, Fe...] のような最適化された配列になります
-        'conflicts' => $result['conflicts'] ?? [], // 矛盾（葛藤）のリスト
+        'order' => $result['order'], // 最も矛盾の少ない順序 [Ni, Ti, Fe...]
+        'conflicts' => $result['conflicts'] ?? [], // 矛盾リスト（確信度が高い順：回答時間が短い順）
         'health' => $health,
     ]);
 });
