@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
   FunctionCode,
@@ -65,7 +66,7 @@ export const useOoX = () => {
         setQuestions(questions);
       } catch (e) {
         console.error("質問データの取得に失敗:", e);
-        alert("質問データの読み込みに失敗しました。");
+        toast.error("質問データの読み込みに失敗しました。");
       } finally {
         setLoadingQuestions(false);
       }
@@ -136,7 +137,7 @@ export const useOoX = () => {
     const unanswered = orderQuestions.filter((q) => !answers[q.id]);
 
     if (unanswered.length > 0) {
-      alert(`未回答の質問があります（${unanswered.length}問）`);
+      toast.warning(`未回答の質問があります（${unanswered.length}問）`);
       setLoading(false);
       return;
     }
@@ -171,7 +172,7 @@ export const useOoX = () => {
       }
     } catch (e) {
       console.error("Calculate API Error:", e);
-      alert("計算エラーが発生しました");
+      toast.error("計算エラーが発生しました");
       setLoading(false);
     }
   };
@@ -211,7 +212,7 @@ export const useOoX = () => {
       checkPollJobStatus(jobId);
     } catch (e) {
       console.error("Describe API Error:", e);
-      alert("分析エラーが発生しました");
+      toast.error("分析エラーが発生しました");
       setLoading(false);
     }
   };
@@ -265,9 +266,10 @@ export const useOoX = () => {
       });
 
       console.log("Result saved to Supabase successfully!");
+      toast.success("結果を保存しました");
     } catch (e) {
       console.error("Save Result Error:", e);
-      alert("結果の保存に失敗しました");
+      toast.error("結果の保存に失敗しました");
     }
   };
 
@@ -292,7 +294,7 @@ export const useOoX = () => {
       console.error("Polling Error:", e);
       const errorMessage =
         e instanceof Error ? e.message : "分析中にエラーが発生しました";
-      alert(errorMessage);
+      toast.error(errorMessage);
       setLoading(false);
     }
   };
