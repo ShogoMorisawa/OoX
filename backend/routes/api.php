@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Controllers\CalculateController;
 use App\Jobs\GenerateDescriptionJob;
-use App\Services\CalculateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -19,60 +19,24 @@ Route::get('/hello', function () {
     ]);
 });
 
-Route::post('/calculate', function (Request $request, CalculateService $service) {
-    // 1. 入力取得
-    $answers = $request->json('answers', []);
-    $healthScores = $request->json('health_scores', []);
-
-    // 2. 質問定義取得 (Supabaseから取得)
-    // 勝敗判定のために「対戦相手(Loser)が誰だったか」を知る必要があるため
-    $supabaseUrl = config('services.supabase.url');
-    $supabaseKey = config('services.supabase.key');
-
-    try {
-        $response = Http::withHeaders([
-            'apikey' => $supabaseKey,
-            'Authorization' => "Bearer {$supabaseKey}",
-            'Content-Type' => 'application/json',
-        ])->get("{$supabaseUrl}/rest/v1/questions", [
-            'select' => 'id,type,left_function_code,right_function_code',
-        ]);
-
-        if ($response->failed()) {
-            return response()->json([
-                'error' => 'Failed to fetch questions from Supabase',
-                'details' => $response->json() ?? $response->body(),
-            ], 500);
-        }
-
-        $questions = $response->json() ?? [];
-
-        // IDをキーにしたマップ形式に変換
-        $questionsMap = [];
-        foreach ($questions as $question) {
-            $questionsMap[$question['id']] = $question;
-        }
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Error fetching questions',
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-
-    // 3. 計算実行
-    // 返り値が ['order' => ..., 'conflicts' => ...] になっています
-    $result = $service->calculateBestOrder($answers, $questionsMap);
-
-    // 4. 健全度計算
-    $health = $service->calculateHealthStatus($healthScores);
-
-    // 5. 結果返却
-    return response()->json([
-        'order' => $result['order'], // 最も矛盾の少ない順序 [Ni, Ti, Fe...]
-        'conflicts' => $result['conflicts'] ?? [], // 矛盾リスト（確信度が高い順：回答時間が短い順）
-        'health' => $health,
-    ]);
-});
+/*
+|--------------------------------------------------------------------------
+| 計算API（Logic Engine）
+|--------------------------------------------------------------------------
+| ユーザーの回答データ（28マッチ）を受け取り、グラフベースの推論
+| （ケメニー・ヤング法）を実行して、最も矛盾の少ない順序（序列）と
+| 葛藤ブロックを算出する。OoX Mirror の「脳」として機能。
+|
+| Request Body:
+|   - answers: array[{question_id, choice_id, function_code, response_time_ms}]
+|   - health_scores: array{FunctionCode: number}
+|
+| Response:
+|   - order: array[FunctionCode] | array[FunctionCode[]] (葛藤ブロック含む)
+|   - conflicts: array[{question_id, user_winner, system_order_winner, response_time_ms}]
+|   - health: array{FunctionCode: 'O'|'o'|'x'}
+*/
+Route::post('/calculate', CalculateController::class);
 
 /*
 |--------------------------------------------------------------------------
