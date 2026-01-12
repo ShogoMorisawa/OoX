@@ -21,7 +21,7 @@ class CalculateServiceTest extends TestCase
 
     /**
      * テストケース1: 矛盾がない「きれいな序列」の計算
-     * 
+     *
      * Ni > Ti > Fe という明確な順序がある場合、
      * ケメニー・ヤング法が正しく最適順序を算出することを確認する。
      */
@@ -86,7 +86,7 @@ class CalculateServiceTest extends TestCase
 
     /**
      * テストケース2: サイクル（三すくみ）を含む場合の処理
-     * 
+     *
      * A > B > C > A というサイクルがある場合、
      * ケメニー・ヤング法が最も矛盾の少ない順序を算出することを確認する。
      */
@@ -152,7 +152,7 @@ class CalculateServiceTest extends TestCase
 
     /**
      * テストケース3: fixed_matchパラメータの動作確認
-     * 
+     *
      * ユーザーが明示的に指定した勝敗関係（fixed_match）が
      * 強制されることを確認する。
      */
@@ -347,7 +347,7 @@ class CalculateServiceTest extends TestCase
 
     /**
      * テストケース10: 重み付けの動作確認（回答時間による重みの違い）
-     * 
+     *
      * 回答時間が短い（確信度が高い）回答ほど重みが大きくなることを確認する。
      * このテストは、calculateBestOrderを通して間接的に検証する。
      */
@@ -390,14 +390,14 @@ class CalculateServiceTest extends TestCase
         $order = $result['order'];
         $niIndex = array_search('Ni', $order);
         $tiIndex = array_search('Ti', $order);
-        
+
         // NiがTiより上位であることを確認（重みが大きい回答が優先される）
         $this->assertLessThan($tiIndex, $niIndex, 'High confidence answer (Ni > Ti) should be prioritized');
     }
 
     /**
      * テストケース11: 矛盾検出の動作確認
-     * 
+     *
      * ユーザーの回答と最適順序の間に矛盾がある場合、
      * それが正しく検出されることを確認する。
      */
