@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import {
   FunctionCode,
-  OrderElement,
   CalculateResponse,
   DescribeResponse,
   Step,
@@ -12,6 +11,8 @@ import {
   Question,
   Choice,
   AnswerData,
+  Conflict,
+  FixedMatch,
 } from "@/types/oox";
 
 import { OOX_STEPS } from "@/constants/steps";
@@ -53,6 +54,7 @@ export const useOoX = () => {
   );
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [currentConflict, setCurrentConflict] = useState<Conflict | null>(null);
   const [conflictBlock, setConflictBlock] = useState<FunctionCode[]>([]);
   const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
   const [finalOrder, setFinalOrder] = useState<FunctionCode[]>([]);
@@ -92,8 +94,14 @@ export const useOoX = () => {
   };
 
   const handleSelectOrder = (func: FunctionCode) => {
-    if (resolvedBlock.includes(func)) return;
-    setResolvedBlock([...resolvedBlock, func]);
+    // Resolve画面では1つだけ選択する想定（配列ではなく単一の値として扱う）
+    if (resolvedBlock.includes(func)) {
+      // 既に選択されている場合は解除
+      setResolvedBlock([]);
+    } else {
+      // 新しく選択（既存の選択を上書き）
+      setResolvedBlock([func]);
+    }
   };
 
   const handleResetConflict = () => {
@@ -101,28 +109,63 @@ export const useOoX = () => {
   };
 
   const handleConfirmConflict = async () => {
-    if (!calculateResult) return;
+    // UIで選択された勝者（resolvedBlock[0]に入っているはず）を取得
+    // ※ UI側で「選択」ボタンを押すと handleSelectOrder が呼ばれ、resolvedBlock に1つだけ入る想定
+    if (!calculateResult || resolvedBlock.length === 0 || !currentConflict)
+      return;
 
-    const newOrder = [...calculateResult.order];
-    const conflictIndex = newOrder.findIndex((el) => Array.isArray(el));
+    const selectedWinner = resolvedBlock[0];
 
-    if (conflictIndex !== -1) {
-      newOrder.splice(conflictIndex, 1, ...resolvedBlock);
+    // 勝者じゃない方が敗者
+    const loser =
+      selectedWinner === currentConflict.user_winner
+        ? currentConflict.system_order_winner
+        : currentConflict.user_winner;
 
-      setCalculateResult({ ...calculateResult, order: newOrder });
-      setResolvedBlock([]);
+    // ★固定ルールを作成
+    const fixedMatch: FixedMatch = {
+      winner: selectedWinner,
+      loser: loser,
+    };
 
-      const nextConflictIndex = newOrder.findIndex((el) => Array.isArray(el));
-      if (nextConflictIndex !== -1) {
-        const block = newOrder[nextConflictIndex] as FunctionCode[];
-        setConflictBlock(block);
+    setLoading(true);
+    setLoadingMessage("再計算中...");
+
+    // answers State は変わっていないので、そこから再構築するのが安全
+    const orderQuestions = questions.filter((q) => q.type === "comparison");
+    const healthQuestions = questions.filter((q) => q.type === "diagnostic");
+    const richAnswers = buildRichAnswersFromState(orderQuestions, answers);
+    const healthScores = buildHealthScores(healthQuestions, answers);
+
+    try {
+      // ★API再計算実行（固定ルール付き）
+      const data = await calculate(richAnswers, healthScores, fixedMatch);
+      setCalculateResult(data);
+
+      // 再度チェック: まだ別の矛盾が残っているか？
+      if (data.conflicts && data.conflicts.length > 0) {
+        const nextConflict = data.conflicts[0];
+        setCurrentConflict(nextConflict);
+        setConflictBlock([
+          nextConflict.system_order_winner,
+          nextConflict.user_winner,
+        ]);
+        setResolvedBlock([]); // 選択解除
+
+        // ステップは RESOLVE のまま維持
+        setLoading(false);
       } else {
-        // すべての葛藤が解決された場合、finalOrderを確定
-        const flattenedOrder = newOrder.flat() as FunctionCode[];
-        setFinalOrder(flattenedOrder);
-
+        // 全て解決！
+        setFinalOrder(data.order);
+        const defaultTierMap = buildDefaultTierMap(data.order);
+        setTierMap(defaultTierMap);
         setStep(OOX_STEPS.HIERARCHY);
+        setLoading(false);
       }
+    } catch (e) {
+      console.error("Re-calculation Error:", e);
+      toast.error("再計算に失敗しました");
+      setLoading(false);
     }
   };
 
@@ -131,6 +174,7 @@ export const useOoX = () => {
     setLoadingMessage("思考回路を解析中...");
     setCalculateResult(null);
     setResolvedBlock([]);
+    setCurrentConflict(null); // リセット
 
     const orderQuestions = questions.filter((q) => q.type === "comparison");
     const healthQuestions = questions.filter((q) => q.type === "diagnostic");
@@ -149,22 +193,21 @@ export const useOoX = () => {
       const data = await calculate(richAnswers, healthScores);
       setCalculateResult(data);
 
-      const conflictIndex = data.order.findIndex((el: OrderElement) =>
-        Array.isArray(el)
-      );
-      const hasConflict = conflictIndex !== -1;
+      // ★変更: conflicts配列をチェック
+      if (data.conflicts && data.conflicts.length > 0) {
+        // 最も深刻な矛盾（先頭）を取り出す
+        const conflict = data.conflicts[0];
+        setCurrentConflict(conflict);
 
-      if (hasConflict) {
-        const block = data.order[conflictIndex] as FunctionCode[];
+        // UIに渡すための「対立している2つの機能」をセット
+        // 順番はUIの表示に合わせて調整（例: 左=System, 右=User）
+        setConflictBlock([conflict.system_order_winner, conflict.user_winner]);
 
-        setConflictBlock(block);
         setStep(OOX_STEPS.RESOLVE);
         setLoading(false);
       } else {
-        // 葛藤がない場合、finalOrderを確定
-        const flattenedOrder = data.order.flat() as FunctionCode[];
-        setFinalOrder(flattenedOrder);
-
+        // 矛盾なし → そのまま完了
+        setFinalOrder(data.order);
         const defaultTierMap = buildDefaultTierMap(data.order);
         setTierMap(defaultTierMap);
         setStep(OOX_STEPS.HIERARCHY);
@@ -223,7 +266,8 @@ export const useOoX = () => {
     currentTierMap: Partial<Record<FunctionCode, Tier>>
   ) => {
     try {
-      const finalOrder = calcRes.order.flat() as FunctionCode[];
+      // order は既に FunctionCode[] なので .flat() は不要
+      const finalOrder = calcRes.order;
       const dominant = finalOrder[0];
       const second = finalOrder[1];
 
@@ -309,6 +353,7 @@ export const useOoX = () => {
     setCalculateResult(null);
     setTierMap({});
     setDescribeResult(null);
+    setCurrentConflict(null);
     setConflictBlock([]);
     setResolvedBlock([]);
     setFinalOrder([]);
