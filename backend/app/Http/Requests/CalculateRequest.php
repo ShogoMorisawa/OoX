@@ -29,6 +29,9 @@ class CalculateRequest extends FormRequest
             'answers.*.response_time_ms' => 'required|integer|min:0',
             'health_scores' => 'required|array',
             'health_scores.*' => 'nullable|numeric|min:0',
+            'fixed_match' => 'nullable|array',
+            'fixed_match.winner' => 'nullable|string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se',
+            'fixed_match.loser' => 'nullable|string|in:Ni,Ne,Ti,Te,Fi,Fe,Si,Se',
         ];
     }
 }
