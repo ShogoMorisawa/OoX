@@ -3,19 +3,7 @@
 use App\Http\Controllers\CalculateController;
 use App\Http\Controllers\DescribeController;
 use App\Http\Controllers\ResultController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-Route::get('/hello', function () {
-    return response()->json([
-        'message' => 'Hello from Lambda!',
-        'status' => 'success',
-    ]);
-});
 
 /*
 |--------------------------------------------------------------------------
