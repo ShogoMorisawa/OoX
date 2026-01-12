@@ -118,6 +118,12 @@ export type RichAnswer = {
   response_time_ms: number;
 };
 
+// 葛藤解決時の固定勝敗関係（API送信用）
+export interface FixedMatch {
+  winner: FunctionCode;
+  loser: FunctionCode;
+}
+
 export type WorldUserResult = {
   id: string;
   created_at: string;
