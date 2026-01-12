@@ -9,11 +9,23 @@ export type FunctionCode =
   | "Fe"
   | "Si"
   | "Se";
+
+// 後方互換性のため残していますが、新しいコードでは使用しないでください
+// 新しい仕様では order は常に FunctionCode[] です
 export type OrderElement = FunctionCode | FunctionCode[];
+
+// 葛藤（矛盾）情報の型
+export type Conflict = {
+  question_id: string;
+  user_winner: FunctionCode; // ユーザーが選んだ機能
+  system_order_winner: FunctionCode; // システムの順序では上位になっている機能
+  response_time_ms: number; // 回答時間（ミリ秒）
+};
 
 // バックエンドからのレスポンス型
 export type CalculateResponse = {
-  order: OrderElement[];
+  order: FunctionCode[]; // 最適化された順序（常に FunctionCode[]）
+  conflicts: Conflict[]; // 矛盾リスト（回答時間が長い順にソート済み）
   health: Record<FunctionCode, "O" | "o" | "x">;
   healthScore?: Record<FunctionCode, number>; // デバッグ用（将来削除可）
 };
