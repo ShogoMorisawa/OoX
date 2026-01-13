@@ -43,6 +43,7 @@ export interface Choice {
   text: string;
   relatedFunctionCode: FunctionCode; // related_function -> related_function_code
   scoreValue: number; // health_score -> score_value (0 or 1)
+  shortText?: string; // short_text
 }
 
 // 共通の質問プロパティ
@@ -52,6 +53,7 @@ interface BaseQuestion {
   text: string;
   displayOrder: number;
   choices: Choice[];
+  shortText?: string; // short_text
 }
 
 // 比較（序列）用の質問型
@@ -81,6 +83,7 @@ export interface SupabaseQuestion {
   right_function_code: FunctionCode | null;
   display_order: number;
   choices: SupabaseChoice[]; // JOINされた結果
+  short_text: string | null;
 }
 
 export interface SupabaseChoice {
@@ -90,6 +93,7 @@ export interface SupabaseChoice {
   text: string;
   related_function_code: FunctionCode;
   score_value: number;
+  short_text: string | null;
 }
 
 // ステップ型（constants/steps.ts の OOX_STEPS から導出）

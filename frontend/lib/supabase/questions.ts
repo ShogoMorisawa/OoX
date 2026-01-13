@@ -28,6 +28,7 @@ export async function fetchQuestions(): Promise<Question[]> {
       id: q.id,
       code: q.code ?? undefined,
       text: q.text,
+      shortText: q.short_text ?? undefined,
       displayOrder: q.display_order,
       choices: q.choices
         .sort((a, b) => a.label.localeCompare(b.label)) // A, B順にソート
@@ -36,6 +37,7 @@ export async function fetchQuestions(): Promise<Question[]> {
           questionId: c.question_id,
           choiceId: c.label, // DBのlabelをchoiceIdとして扱う
           text: c.text,
+          shortText: c.short_text ?? undefined,
           relatedFunctionCode: c.related_function_code,
           scoreValue: c.score_value ?? 0,
         })),

@@ -24,6 +24,7 @@ export default function Screens() {
     conflictBlock,
     resolvedBlock,
     tierMap,
+    conflictQuestion,
     handleStart,
     handleChange,
     handleSelectOrder,
@@ -59,6 +60,7 @@ export default function Screens() {
       <ResolveScreen
         conflictBlock={conflictBlock}
         resolvedBlock={resolvedBlock}
+        conflictQuestion={conflictQuestion}
         handleSelectOrder={handleSelectOrder}
         handleConfirmConflict={handleConfirmConflict}
         loading={loading}

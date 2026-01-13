@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ResolveScreen from "@/components/screens/resolve";
-import { CalculateResponse, FunctionCode } from "@/types/oox";
+import { CalculateResponse, FunctionCode, Question } from "@/types/oox";
 
 // モックデータ: 葛藤解決画面のスタイル確認用
 // 新しい仕様では conflicts 配列を使用
@@ -26,6 +26,37 @@ const MOCK_CALCULATE_RESULT: CalculateResponse = {
     Si: "x",
     Se: "o",
   },
+};
+
+const MOCK_CONFLICT_QUESTION: Question = {
+  id: "test-1",
+  code: "Q-01",
+  text: "難しい問題に直面したとき、あなたはどちらに近いですか？",
+  shortText: "難題に向き合うとき、どう動く？",
+  displayOrder: 1,
+  type: "comparison",
+  leftFunctionCode: "Se",
+  rightFunctionCode: "Fi",
+  choices: [
+    {
+      id: "choice-a",
+      questionId: "test-1",
+      choiceId: "A",
+      text: "状況を整理し、まず目の前の現実的な手がかりから詰めていく。",
+      shortText: "現実の手がかりから詰める",
+      relatedFunctionCode: "Se",
+      scoreValue: 0,
+    },
+    {
+      id: "choice-b",
+      questionId: "test-1",
+      choiceId: "B",
+      text: "自分の価値観に照らして、本当に大切なことから決めていく。",
+      shortText: "価値観から優先順位を決める",
+      relatedFunctionCode: "Fi",
+      scoreValue: 0,
+    },
+  ],
 };
 
 export default function TestResolvePage() {
@@ -81,6 +112,7 @@ export default function TestResolvePage() {
       <ResolveScreen
         conflictBlock={conflictBlock}
         resolvedBlock={resolvedBlock}
+        conflictQuestion={MOCK_CONFLICT_QUESTION}
         handleSelectOrder={handleSelectOrder}
         handleConfirmConflict={handleConfirmConflict}
         loading={loading}

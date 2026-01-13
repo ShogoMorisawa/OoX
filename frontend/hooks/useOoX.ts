@@ -359,6 +359,10 @@ export const useOoX = () => {
     setFinalOrder([]);
   };
 
+  const conflictQuestion = currentConflict
+    ? questions.find((q) => q.id === currentConflict.question_id)
+    : undefined;
+
   return {
     step,
     answers,
@@ -372,6 +376,8 @@ export const useOoX = () => {
     conflictBlock,
     resolvedBlock,
     tierMap,
+    conflictQuestion,
+    currentConflict,
     handleStart,
     handleChange,
     handleSelectOrder,
