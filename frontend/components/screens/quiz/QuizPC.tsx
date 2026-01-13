@@ -79,7 +79,7 @@ export default function QuizPC(props: QuizViewProps) {
                 </span>
 
                 {/* 質問文 */}
-                <h2 className="relative z-10 text-slate-800 text-xl font-medium leading-relaxed tracking-wide mt-6">
+                <h2 className="relative z-10 text-slate-800 text-xl font-medium leading-relaxed tracking-wide mt-6 whitespace-pre-wrap">
                   {currentQuestion.text}
                 </h2>
               </div>
@@ -130,7 +130,7 @@ export default function QuizPC(props: QuizViewProps) {
 
                       {/* 選択肢テキスト */}
                       <span
-                        className={`text-lg font-medium leading-relaxed transition-colors duration-300 ${
+                        className={`text-lg font-medium leading-relaxed transition-colors duration-300 whitespace-pre-wrap ${
                           isSelected
                             ? "text-slate-900"
                             : "text-slate-700 group-hover:text-slate-900"

@@ -62,19 +62,19 @@ export default function QuizMobile(props: QuizViewProps) {
 
         {/* 4. 質問エリア (すりガラス吹き出し) */}
         <div className="relative w-full mb-6 shrink-0">
-          <div className="relative bg-white/50 backdrop-blur-md rounded-[2rem] p-6 shadow-xl border border-white/60 text-center min-h-[140px] flex flex-col items-center justify-center">
+          <div className="relative bg-white/50 backdrop-blur-md rounded-[2rem] p-6 shadow-xl border border-white/60 text-left min-h-[140px] flex flex-col items-start justify-center">
             {/* 吹き出しのしっぽ (CSSトリック) */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white/50 backdrop-blur-md border-t border-l border-white/60 rotate-45" />
 
             {/* 質問タイプラベル */}
-            <span className="absolute top-4 text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">
+            <span className="absolute top-4 left-4 text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-white/40 px-2 py-0.5 rounded-full">
               {currentQuestion.type === "comparison"
                 ? "COMPARISON"
                 : "DIAGNOSIS"}
             </span>
 
             {/* 質問本文 */}
-            <h2 className="relative z-10 text-slate-800 font-medium leading-relaxed text-sm md:text-base tracking-wide mt-4">
+            <h2 className="relative z-10 text-slate-800 font-medium leading-relaxed text-sm md:text-base tracking-wide mt-4 whitespace-pre-wrap">
               {currentQuestion.text}
             </h2>
           </div>
@@ -126,7 +126,7 @@ export default function QuizMobile(props: QuizViewProps) {
 
                   {/* 選択肢テキスト */}
                   <span
-                    className={`text-sm font-medium leading-relaxed ${
+                    className={`text-sm font-medium leading-relaxed whitespace-pre-wrap ${
                       isSelected ? "text-slate-900" : "text-slate-700"
                     }`}
                   >
