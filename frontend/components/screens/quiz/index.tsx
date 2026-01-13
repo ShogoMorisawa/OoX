@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useLayoutEffect, useRef } from "react";
+import { useState, useLayoutEffect, useRef, useEffect } from "react";
 import { Quicksand } from "next/font/google";
 
 import QuizMobile from "./QuizMobile";
@@ -15,6 +15,7 @@ type Props = {
   answers: Record<string, AnswerData>;
   loading: boolean;
   loadingMessage: string;
+  initialIndex?: number;
   onChange: (
     questionId: string,
     choiceId: AnswerValue,
@@ -48,6 +49,7 @@ export default function QuizContainer({
   answers,
   loading,
   loadingMessage,
+  initialIndex,
   onChange,
   onCalculate,
 }: Props) {
@@ -57,6 +59,15 @@ export default function QuizContainer({
 
   const totalQuestions = questions.length;
   const currentQuestion = questions[index];
+
+  useEffect(() => {
+    if (initialIndex === undefined || questions.length === 0) return;
+    const safeIndex = Math.min(
+      Math.max(0, initialIndex),
+      questions.length - 1
+    );
+    setIndex(safeIndex);
+  }, [initialIndex, questions.length]);
 
   const isLastQuestion = index === totalQuestions - 1;
   const progress = totalQuestions > 0 ? (index + 1) / totalQuestions : 0;
