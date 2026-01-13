@@ -2,9 +2,20 @@
 
 import Image from "next/image";
 
-import { ResolveViewProps } from "./index";
 import { FUNCTION_TEXT } from "@/constants/cells";
 import { getCellImage } from "@/constants/icons";
+import type { FunctionCode } from "@/types/oox";
+
+type ResolveViewProps = {
+  remainingFuncs: FunctionCode[];
+  slots: (FunctionCode | null)[];
+  isSlotInCurrentBlock: boolean[];
+  allDecided: boolean;
+  onSelectOrder: (func: FunctionCode) => void;
+  onReset: () => void;
+  onConfirm: () => void;
+  quicksandClassName: string;
+};
 
 export default function ResolveMobile({
   remainingFuncs,
