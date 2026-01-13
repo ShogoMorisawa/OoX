@@ -57,12 +57,11 @@ export default function Screens() {
   if (step === OOX_STEPS.RESOLVE && calculateResult) {
     return (
       <ResolveScreen
-        calculateResult={calculateResult}
         conflictBlock={conflictBlock}
         resolvedBlock={resolvedBlock}
-        onSelectOrder={handleSelectOrder}
-        onReset={handleResetConflict}
-        onConfirm={handleConfirmConflict}
+        handleSelectOrder={handleSelectOrder}
+        handleConfirmConflict={handleConfirmConflict}
+        loading={loading}
       />
     );
   }

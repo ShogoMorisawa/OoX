@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import ResolveContainer from "@/components/screens/resolve";
+import ResolveScreen from "@/components/screens/resolve";
 import { CalculateResponse, FunctionCode } from "@/types/oox";
 
 // モックデータ: 葛藤解決画面のスタイル確認用
-// 3つの機能が葛藤ブロック（配列）になっている
+// 新しい仕様では conflicts 配列を使用
 const MOCK_CALCULATE_RESULT: CalculateResponse = {
-  order: [
-    "Ni",
-    "Te",
-    ["Fi", "Se", "Ti"], // 葛藤ブロック（3つの機能が同じ強さ）
-    "Ne",
-    "Fe",
-    "Si",
+  order: ["Ni", "Te", "Fi", "Se", "Ti", "Ne", "Fe", "Si"],
+  conflicts: [
+    {
+      question_id: "test-1",
+      user_winner: "Fi", // ユーザーが選んだ機能
+      system_order_winner: "Se", // システムの順序では上位になっている機能
+      response_time_ms: 45000, // 回答時間（長い = 迷った）
+    },
   ],
   health: {
     Ni: "O",
@@ -29,25 +30,37 @@ const MOCK_CALCULATE_RESULT: CalculateResponse = {
 
 export default function TestResolvePage() {
   const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // 葛藤ブロックを抽出（最初の配列要素）
+  // 新しい仕様: conflictBlock は [system_order_winner, user_winner] の形式
   const conflictBlock: FunctionCode[] =
-    (MOCK_CALCULATE_RESULT.order.find((el) =>
-      Array.isArray(el)
-    ) as FunctionCode[]) || [];
+    MOCK_CALCULATE_RESULT.conflicts.length > 0
+      ? [
+          MOCK_CALCULATE_RESULT.conflicts[0].system_order_winner,
+          MOCK_CALCULATE_RESULT.conflicts[0].user_winner,
+        ]
+      : [];
 
   const handleSelectOrder = (func: FunctionCode) => {
-    if (resolvedBlock.includes(func)) return;
-    setResolvedBlock([...resolvedBlock, func]);
+    // Resolve画面では1つだけ選択する想定
+    if (resolvedBlock.includes(func)) {
+      // 既に選択されている場合は解除
+      setResolvedBlock([]);
+    } else {
+      // 新しく選択（既存の選択を上書き）
+      setResolvedBlock([func]);
+    }
   };
 
-  const handleReset = () => {
-    setResolvedBlock([]);
-  };
-
-  const handleConfirm = () => {
+  const handleConfirmConflict = () => {
     console.log("決定ボタンがクリックされました（テスト用）");
-    console.log("解決された順序:", resolvedBlock);
+    console.log("選択された勝者:", resolvedBlock[0]);
+    setLoading(true);
+    // テスト用のローディングシミュレーション
+    setTimeout(() => {
+      setLoading(false);
+      console.log("再計算完了（テスト用）");
+    }, 2000);
   };
 
   return (
@@ -61,17 +74,16 @@ export default function TestResolvePage() {
         </p>
         {resolvedBlock.length > 0 && (
           <p className="text-xs text-slate-500 mt-1">
-            選択済み: {resolvedBlock.join(", ")}
+            選択済み: {resolvedBlock[0]}
           </p>
         )}
       </div>
-      <ResolveContainer
-        calculateResult={MOCK_CALCULATE_RESULT}
+      <ResolveScreen
         conflictBlock={conflictBlock}
         resolvedBlock={resolvedBlock}
-        onSelectOrder={handleSelectOrder}
-        onReset={handleReset}
-        onConfirm={handleConfirm}
+        handleSelectOrder={handleSelectOrder}
+        handleConfirmConflict={handleConfirmConflict}
+        loading={loading}
       />
     </div>
   );
