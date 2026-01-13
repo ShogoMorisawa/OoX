@@ -7,6 +7,7 @@ import { CalculateResponse } from "@/types/oox";
 // モックデータ: 階層画面のスタイル確認用
 const MOCK_CALCULATE_RESULT: CalculateResponse = {
   order: ["Ni", "Te", "Fi", "Se", "Ti", "Ne", "Fe", "Si"],
+  conflicts: [],
   health: {
     Ni: "O",
     Ne: "o",
