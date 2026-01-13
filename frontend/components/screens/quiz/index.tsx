@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useLayoutEffect, useRef, useEffect } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 import { Quicksand } from "next/font/google";
 
 import QuizMobile from "./QuizMobile";
@@ -54,23 +54,20 @@ export default function QuizContainer({
   onCalculate,
 }: Props) {
   const isMobile = useIsMobile();
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() =>
+    initialIndex === undefined ? 0 : Math.max(0, initialIndex)
+  );
   const questionStartTimeRef = useRef<number | null>(null);
 
   const totalQuestions = questions.length;
-  const currentQuestion = questions[index];
+  const currentIndex =
+    totalQuestions > 0 ? Math.min(index, totalQuestions - 1) : 0;
+  const currentQuestion = questions[currentIndex];
 
-  useEffect(() => {
-    if (initialIndex === undefined || questions.length === 0) return;
-    const safeIndex = Math.min(
-      Math.max(0, initialIndex),
-      questions.length - 1
-    );
-    setIndex(safeIndex);
-  }, [initialIndex, questions.length]);
-
-  const isLastQuestion = index === totalQuestions - 1;
-  const progress = totalQuestions > 0 ? (index + 1) / totalQuestions : 0;
+  const isLastQuestion =
+    totalQuestions > 0 && currentIndex === totalQuestions - 1;
+  const progress =
+    totalQuestions > 0 ? (currentIndex + 1) / totalQuestions : 0;
   const currentAnswer = currentQuestion
     ? answers[currentQuestion.id]?.choiceId
     : undefined;
@@ -97,7 +94,9 @@ export default function QuizContainer({
     if (!currentAnswer) return;
 
     if (!isLastQuestion) {
-      setIndex((prev) => Math.min(prev + 1, totalQuestions - 1));
+      setIndex((prev) =>
+        Math.min(Math.max(prev, currentIndex) + 1, totalQuestions - 1)
+      );
       window.scrollTo({ top: 0, behavior: "smooth" });
       // 次の質問に移るので、開始時刻をリセット（useLayoutEffectで再設定される）
       questionStartTimeRef.current = null;
@@ -107,8 +106,8 @@ export default function QuizContainer({
   };
 
   const handlePrev = () => {
-    if (loading || index === 0) return;
-    setIndex((prev) => Math.max(prev - 1, 0));
+    if (loading || currentIndex === 0) return;
+    setIndex((prev) => Math.max(Math.min(prev, currentIndex) - 1, 0));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
