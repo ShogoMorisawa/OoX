@@ -6,6 +6,7 @@ import { CalculateResponse, DescribeResponse } from "@/types/oox";
 // モックデータ: 結果画面のスタイル確認用
 const MOCK_CALCULATE_RESULT: CalculateResponse = {
   order: ["Ni", "Te", "Fi", "Se", "Ti", "Ne", "Fe", "Si"],
+  conflicts: [],
   health: {
     Ni: "O",
     Ne: "o",
@@ -55,4 +56,3 @@ export default function TestResultPage() {
     </div>
   );
 }
-
