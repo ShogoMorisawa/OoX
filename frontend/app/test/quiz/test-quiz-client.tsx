@@ -5,6 +5,11 @@ import { useSearchParams } from "next/navigation";
 import QuizScreen from "@/components/screens/quiz";
 import type { AnswerData, Question } from "@/types/oox";
 import { fetchQuestions } from "@/lib/supabase/questions";
+import {
+  LOADING_MESSAGES,
+  ERROR_MESSAGES,
+  TEST_MESSAGES,
+} from "@/constants/messages";
 
 export default function TestQuizClient() {
   const searchParams = useSearchParams();
@@ -29,7 +34,7 @@ export default function TestQuizClient() {
         const data = await fetchQuestions();
         setQuestions(data);
       } catch (error) {
-        console.error("質問データの取得に失敗:", error);
+        console.error(ERROR_MESSAGES.FETCH_QUESTIONS_FAILED, error);
       } finally {
         setLoadingQuestions(false);
       }
@@ -51,18 +56,18 @@ export default function TestQuizClient() {
 
   const handleCalculate = () => {
     setLoading(true);
-    setLoadingMessage("テスト中...");
+    setLoadingMessage(LOADING_MESSAGES.TESTING);
     setTimeout(() => {
       setLoading(false);
       setLoadingMessage("");
-      console.log("テスト用: 計算トリガー");
+      console.log(TEST_MESSAGES.CALCULATE_TRIGGER);
     }, 1000);
   };
 
   if (loadingQuestions) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-600">
-        Loading...
+        {LOADING_MESSAGES.DEFAULT}
       </div>
     );
   }
@@ -71,10 +76,10 @@ export default function TestQuizClient() {
     <div className="min-h-screen">
       <div className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-slate-200">
         <p className="text-sm text-slate-600 font-medium">
-          🧪 Quiz画面テストモード
+          {TEST_MESSAGES.QUIZ_TEST_MODE}
         </p>
         <p className="text-xs text-slate-500 mt-1">
-          ?q=1 のように指定して任意の質問から開始できます
+          {TEST_MESSAGES.QUIZ_TEST_DESCRIPTION}
         </p>
       </div>
       <QuizScreen
