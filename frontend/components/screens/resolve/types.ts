@@ -9,28 +9,22 @@ export type ResolveScreenProps = {
   handleConfirmConflict: () => void;
   loading: boolean;
   conflictQuestion?: Question;
+  resolveCount: number;
 };
 
 export type ResolveViewProps = {
-  systemWinner: FunctionCode;
-  userWinner: FunctionCode;
-  systemTitle: string;
-  userTitle: string;
-  systemDescription: string;
-  userDescription: string;
-  isSystemSelected: boolean;
-  isUserSelected: boolean;
+  cards: ConflictCardProps[];
   hasSelection: boolean;
   loading: boolean;
   conflictQuestion: Question;
   isDetailOpen: boolean;
+  resolveCount: number;
   onToggleDetail: () => void;
-  onSelectSystem: () => void;
-  onSelectUser: () => void;
   onConfirm: () => void;
 };
 
 export type ConflictCardProps = {
+  id: string;
   type: "system" | "user";
   functionCode: FunctionCode;
   title: string;
@@ -44,5 +38,6 @@ export type ConflictCardProps = {
 export type ResolveHeaderProps = {
   conflictQuestion: Question;
   isDetailOpen: boolean;
+  resolveCount: number;
   onToggleDetail: () => void;
 };

@@ -14,6 +14,7 @@ export default function ResolveScreen({
   handleConfirmConflict,
   loading,
   conflictQuestion,
+  resolveCount,
 }: ResolveScreenProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
@@ -45,17 +46,31 @@ export default function ResolveScreen({
     const isUserSelected = resolvedBlock.includes(userWinner);
     const hasSelection = resolvedBlock.length > 0;
 
+    const cards = [
+      {
+        id: "system",
+        type: "system" as const,
+        functionCode: systemWinner,
+        title: systemTitle,
+        description: systemDescription,
+        isSelected: isSystemSelected,
+        isOtherSelected: isUserSelected,
+      },
+      {
+        id: "user",
+        type: "user" as const,
+        functionCode: userWinner,
+        title: userTitle,
+        description: userDescription,
+        isSelected: isUserSelected,
+        isOtherSelected: isSystemSelected,
+      },
+    ];
+
     return {
       systemWinner,
       userWinner,
-      systemChoice,
-      userChoice,
-      systemTitle,
-      userTitle,
-      systemDescription,
-      userDescription,
-      isSystemSelected,
-      isUserSelected,
+      cards,
       hasSelection,
     };
   }, [conflictBlock, conflictQuestion, resolvedBlock]);
@@ -66,42 +81,33 @@ export default function ResolveScreen({
 
   return (
     <ResolveView
-      systemWinner={derived.systemWinner}
-      userWinner={derived.userWinner}
-      systemTitle={derived.systemTitle}
-      userTitle={derived.userTitle}
-      systemDescription={derived.systemDescription}
-      userDescription={derived.userDescription}
-      isSystemSelected={derived.isSystemSelected}
-      isUserSelected={derived.isUserSelected}
+      cards={derived.cards.map((card) => ({
+        ...card,
+        loading,
+        onClick:
+          card.type === "system"
+            ? () => handleSelectOrder(derived.systemWinner)
+            : () => handleSelectOrder(derived.userWinner),
+      }))}
       hasSelection={derived.hasSelection}
       loading={loading}
       conflictQuestion={conflictQuestion}
       isDetailOpen={isDetailOpen}
+      resolveCount={resolveCount}
       onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
-      onSelectSystem={() => handleSelectOrder(derived.systemWinner)}
-      onSelectUser={() => handleSelectOrder(derived.userWinner)}
       onConfirm={handleConfirmConflict}
     />
   );
 }
 
 function ResolveView({
-  systemWinner,
-  userWinner,
-  systemTitle,
-  userTitle,
-  systemDescription,
-  userDescription,
-  isSystemSelected,
-  isUserSelected,
+  cards,
   hasSelection,
   loading,
   conflictQuestion,
   isDetailOpen,
+  resolveCount,
   onToggleDetail,
-  onSelectSystem,
-  onSelectUser,
   onConfirm,
 }: ResolveViewProps) {
   return (
@@ -115,21 +121,13 @@ function ResolveView({
       <ResolveHeader
         conflictQuestion={conflictQuestion}
         isDetailOpen={isDetailOpen}
+        resolveCount={resolveCount}
         onToggleDetail={onToggleDetail}
       />
 
       {/* --- 2. 対決カード領域 --- */}
       <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 md:gap-10 w-full max-w-6xl mb-24 relative z-10">
-        <ConflictCard
-          type="system"
-          functionCode={systemWinner}
-          title={systemTitle}
-          description={systemDescription}
-          isSelected={isSystemSelected}
-          isOtherSelected={isUserSelected}
-          onClick={onSelectSystem}
-          loading={loading}
-        />
+        <ConflictCard {...cards[0]} />
 
         <div className="flex flex-col items-center justify-center shrink-0 py-2 md:py-0 relative z-20">
           <div className="text-4xl md:text-5xl font-black text-slate-300 italic drop-shadow-sm select-none">
@@ -137,16 +135,7 @@ function ResolveView({
           </div>
         </div>
 
-        <ConflictCard
-          type="user"
-          functionCode={userWinner}
-          title={userTitle}
-          description={userDescription}
-          isSelected={isUserSelected}
-          isOtherSelected={isSystemSelected}
-          onClick={onSelectUser}
-          loading={loading}
-        />
+        <ConflictCard {...cards[1]} />
       </div>
 
       <div className="fixed bottom-8 left-0 right-0 px-6 flex justify-center z-30 pointer-events-none">

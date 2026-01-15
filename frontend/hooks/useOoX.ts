@@ -58,6 +58,7 @@ export const useOoX = () => {
   const [conflictBlock, setConflictBlock] = useState<FunctionCode[]>([]);
   const [resolvedBlock, setResolvedBlock] = useState<FunctionCode[]>([]);
   const [finalOrder, setFinalOrder] = useState<FunctionCode[]>([]);
+  const [resolveCount, setResolveCount] = useState(0);
 
   // --- Effect: Supabaseから質問を取得 ---
   useEffect(() => {
@@ -151,6 +152,7 @@ export const useOoX = () => {
           nextConflict.user_winner,
         ]);
         setResolvedBlock([]); // 選択解除
+        setResolveCount((prev) => prev + 1);
 
         // ステップは RESOLVE のまま維持
         setLoading(false);
@@ -160,6 +162,7 @@ export const useOoX = () => {
         const defaultTierMap = buildDefaultTierMap(data.order);
         setTierMap(defaultTierMap);
         setStep(OOX_STEPS.HIERARCHY);
+        setResolveCount(0);
         setLoading(false);
       }
     } catch (e) {
@@ -202,6 +205,7 @@ export const useOoX = () => {
         // UIに渡すための「対立している2つの機能」をセット
         // 順番はUIの表示に合わせて調整（例: 左=System, 右=User）
         setConflictBlock([conflict.system_order_winner, conflict.user_winner]);
+        setResolveCount(1);
 
         setStep(OOX_STEPS.RESOLVE);
         setLoading(false);
@@ -211,6 +215,7 @@ export const useOoX = () => {
         const defaultTierMap = buildDefaultTierMap(data.order);
         setTierMap(defaultTierMap);
         setStep(OOX_STEPS.HIERARCHY);
+        setResolveCount(0);
         setLoading(false);
       }
     } catch (e) {
@@ -357,6 +362,7 @@ export const useOoX = () => {
     setConflictBlock([]);
     setResolvedBlock([]);
     setFinalOrder([]);
+    setResolveCount(0);
   };
 
   const conflictQuestion = currentConflict
@@ -378,6 +384,7 @@ export const useOoX = () => {
     tierMap,
     conflictQuestion,
     currentConflict,
+    resolveCount,
     handleStart,
     handleChange,
     handleSelectOrder,

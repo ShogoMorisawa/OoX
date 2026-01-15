@@ -2,13 +2,17 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import type { ResolveHeaderProps } from "./types";
-import { HEADER_COPY } from "./constants";
+import { HEADER_COPY, HEADER_VARIANTS } from "./constants";
 
 export default function ResolveHeader({
   conflictQuestion,
   isDetailOpen,
+  resolveCount,
   onToggleDetail,
 }: ResolveHeaderProps) {
+  const variantIndex = resolveCount > 1 ? 1 : 0;
+  const headerVariant = HEADER_VARIANTS[variantIndex] ?? HEADER_VARIANTS[0];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -19,10 +23,10 @@ export default function ResolveHeader({
         {HEADER_COPY.label}
       </span>
       <h2 className="text-xl md:text-2xl font-bold text-slate-800 mt-2 leading-relaxed">
-        {HEADER_COPY.title}
+        {headerVariant.title}
         <br />
         <span className="text-base font-normal text-slate-600">
-          {HEADER_COPY.subtitle}
+          {headerVariant.subtitle}
         </span>
       </h2>
 

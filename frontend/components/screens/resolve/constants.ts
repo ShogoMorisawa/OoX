@@ -2,12 +2,21 @@
 
 export const HEADER_COPY = {
   label: "MEMORY",
-  title: "そういえば、この質問。",
-  subtitle: "回答するのに、いちばん時間を使っていましたね。",
   summaryFallback: "この状況について",
   toggleOpen: "閉じる",
   toggleClosed: "どんな質問だったっけ？",
 };
+
+export const HEADER_VARIANTS = [
+  {
+    title: "そういえば、この質問。",
+    subtitle: "回答するのに、いちばん時間を使っていましたね。",
+  },
+  {
+    title: "もうひとつ、迷った質問がありました。",
+    subtitle: "感覚に近いほうを、もう一度教えてください。",
+  },
+];
 
 export const BADGE_TEXT = {
   system: "これまでの回答と、つじつまが合うのは",
