@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import type { FunctionCode, Question } from "@/types/oox";
 import ConflictCard from "./ConflictCard";
 import ResolveHeader from "./ResolveHeader";
@@ -16,50 +16,66 @@ export default function ResolveScreen({
 }: ResolveScreenProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  // 安全策：データが足りない場合は何も表示しない
-  if (!conflictBlock || conflictBlock.length < 2 || !conflictQuestion) {
+  const derived = useMemo(() => {
+    if (!conflictQuestion || conflictBlock.length < 2) {
+      return null;
+    }
+
+    const systemWinner = conflictBlock[0]; // 左：システムの推奨
+    const userWinner = conflictBlock[1]; // 右：ユーザーの選択
+
+    const systemChoice = conflictQuestion.choices.find(
+      (choice) => choice.relatedFunctionCode === systemWinner
+    );
+    const userChoice = conflictQuestion.choices.find(
+      (choice) => choice.relatedFunctionCode === userWinner
+    );
+
+    const systemTitle =
+      systemChoice?.shortText ||
+      (systemChoice?.text ? `${systemChoice.text.slice(0, 15)}...` : "");
+    const userTitle =
+      userChoice?.shortText ||
+      (userChoice?.text ? `${userChoice.text.slice(0, 15)}...` : "");
+
+    const isSystemSelected = resolvedBlock.includes(systemWinner);
+    const isUserSelected = resolvedBlock.includes(userWinner);
+    const hasSelection = resolvedBlock.length > 0;
+
+    return {
+      systemWinner,
+      userWinner,
+      systemChoice,
+      userChoice,
+      systemTitle,
+      userTitle,
+      isSystemSelected,
+      isUserSelected,
+      hasSelection,
+    };
+  }, [conflictBlock, conflictQuestion, resolvedBlock]);
+
+  if (!derived || !conflictQuestion) {
     return null;
   }
 
-  const systemWinner = conflictBlock[0]; // 左：システムの推奨
-  const userWinner = conflictBlock[1]; // 右：ユーザーの選択
-
-  // 機能コードに対応する選択肢データを取得
-  const systemChoice = conflictQuestion.choices.find(
-    (choice) => choice.relatedFunctionCode === systemWinner
-  );
-  const userChoice = conflictQuestion.choices.find(
-    (choice) => choice.relatedFunctionCode === userWinner
-  );
-
-  const systemTitle =
-    systemChoice?.shortText ||
-    (systemChoice?.text ? `${systemChoice.text.slice(0, 15)}...` : "");
-  const userTitle =
-    userChoice?.shortText ||
-    (userChoice?.text ? `${userChoice.text.slice(0, 15)}...` : "");
-
-  const isSystemSelected = resolvedBlock.includes(systemWinner);
-  const isUserSelected = resolvedBlock.includes(userWinner);
-  const hasSelection = resolvedBlock.length > 0;
-
   return (
     <ResolveView
-      systemWinner={systemWinner}
-      userWinner={userWinner}
-      systemTitle={systemTitle}
-      userTitle={userTitle}
-      systemDescription={systemChoice?.text || ""}
-      userDescription={userChoice?.text || ""}
-      isSystemSelected={isSystemSelected}
-      isUserSelected={isUserSelected}
-      hasSelection={hasSelection}
+      systemWinner={derived.systemWinner}
+      userWinner={derived.userWinner}
+      systemTitle={derived.systemTitle}
+      userTitle={derived.userTitle}
+      systemDescription={derived.systemChoice?.text || ""}
+      userDescription={derived.userChoice?.text || ""}
+      isSystemSelected={derived.isSystemSelected}
+      isUserSelected={derived.isUserSelected}
+      hasSelection={derived.hasSelection}
       loading={loading}
       conflictQuestion={conflictQuestion}
       isDetailOpen={isDetailOpen}
       onToggleDetail={() => setIsDetailOpen((prev) => !prev)}
-      onSelectSystem={() => handleSelectOrder(systemWinner)}
-      onSelectUser={() => handleSelectOrder(userWinner)}
+      onSelectSystem={() => handleSelectOrder(derived.systemWinner)}
+      onSelectUser={() => handleSelectOrder(derived.userWinner)}
       onConfirm={handleConfirmConflict}
     />
   );
