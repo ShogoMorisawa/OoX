@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import type { ResolveHeaderProps } from "./types";
+import { HEADER_COPY } from "./constants";
 
 export default function ResolveHeader({
   conflictQuestion,
@@ -15,13 +16,13 @@ export default function ResolveHeader({
       className="w-full max-w-2xl mb-8 md:mb-12 z-10 text-center"
     >
       <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">
-        MEMORY
+        {HEADER_COPY.label}
       </span>
       <h2 className="text-xl md:text-2xl font-bold text-slate-800 mt-2 leading-relaxed">
-        そういえば、この質問。
+        {HEADER_COPY.title}
         <br />
         <span className="text-base font-normal text-slate-600">
-          回答するのに、いちばん時間を使っていましたね。
+          {HEADER_COPY.subtitle}
         </span>
       </h2>
 
@@ -29,7 +30,7 @@ export default function ResolveHeader({
       <div className="mt-5 inline-block px-6 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-slate-100 shadow-sm">
         <span className="font-bold text-slate-700 mr-2">Q.</span>
         <span className="text-slate-700 font-medium">
-          {conflictQuestion.shortText || "この状況について"}
+          {conflictQuestion.shortText || HEADER_COPY.summaryFallback}
         </span>
       </div>
 
@@ -39,7 +40,7 @@ export default function ResolveHeader({
           onClick={onToggleDetail}
           className="text-xs text-slate-400 hover:text-slate-600 font-medium flex items-center justify-center gap-1 mx-auto transition-colors"
         >
-          {isDetailOpen ? "閉じる" : "どんな質問だったっけ？"}
+          {isDetailOpen ? HEADER_COPY.toggleOpen : HEADER_COPY.toggleClosed}
           <span
             className={`transform transition-transform ${
               isDetailOpen ? "rotate-180" : ""

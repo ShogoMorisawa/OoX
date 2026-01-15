@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import type { FunctionCode, Question } from "@/types/oox";
 import ConflictCard from "./ConflictCard";
 import ResolveHeader from "./ResolveHeader";
+import { CTA_LABEL } from "./constants";
 import type { ResolveScreenProps, ResolveViewProps } from "./types";
 
 export default function ResolveScreen({
@@ -163,10 +164,10 @@ function ResolveView({
             {loading ? (
               <>
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>再計算中...</span>
+                <span>{CTA_LABEL.loading}</span>
               </>
             ) : (
-              "今の私は、こっち。"
+              CTA_LABEL.default
             )}
           </button>
         </div>

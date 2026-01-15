@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { getCellImage } from "@/constants/icons";
 import type { ConflictCardProps } from "./types";
+import { ACTIVE_CLASS, BADGE_COLOR, BADGE_TEXT } from "./constants";
 
 export default function ConflictCard({
   type,
@@ -19,17 +20,9 @@ export default function ConflictCard({
   const isSystem = type === "system";
 
   // 文言の定義
-  const badgeText = isSystem
-    ? "これまでの回答と、つじつまが合うのは"
-    : "でもあの時、あなたが選んだのは";
-
-  // 色定義：システム(青系) / ユーザー(オレンジ系)
-  const badgeColor = isSystem
-    ? "bg-blue-50 text-blue-600 border-blue-100"
-    : "bg-orange-50 text-orange-600 border-orange-100";
-  const activeClass = isSystem
-    ? "bg-blue-50/90 border-blue-300 ring-4 ring-blue-100"
-    : "bg-orange-50/90 border-orange-300 ring-4 ring-orange-100";
+  const badgeText = isSystem ? BADGE_TEXT.system : BADGE_TEXT.user;
+  const badgeColor = isSystem ? BADGE_COLOR.system : BADGE_COLOR.user;
+  const activeClass = isSystem ? ACTIVE_CLASS.system : ACTIVE_CLASS.user;
 
   return (
     <motion.button
