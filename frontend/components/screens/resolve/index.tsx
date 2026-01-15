@@ -37,6 +37,8 @@ export default function ResolveScreen({
     const userTitle =
       userChoice?.shortText ||
       (userChoice?.text ? `${userChoice.text.slice(0, 15)}...` : "");
+    const systemDescription = systemChoice?.text || "";
+    const userDescription = userChoice?.text || "";
 
     const isSystemSelected = resolvedBlock.includes(systemWinner);
     const isUserSelected = resolvedBlock.includes(userWinner);
@@ -49,6 +51,8 @@ export default function ResolveScreen({
       userChoice,
       systemTitle,
       userTitle,
+      systemDescription,
+      userDescription,
       isSystemSelected,
       isUserSelected,
       hasSelection,
@@ -65,8 +69,8 @@ export default function ResolveScreen({
       userWinner={derived.userWinner}
       systemTitle={derived.systemTitle}
       userTitle={derived.userTitle}
-      systemDescription={derived.systemChoice?.text || ""}
-      userDescription={derived.userChoice?.text || ""}
+      systemDescription={derived.systemDescription}
+      userDescription={derived.userDescription}
       isSystemSelected={derived.isSystemSelected}
       isUserSelected={derived.isUserSelected}
       hasSelection={derived.hasSelection}
