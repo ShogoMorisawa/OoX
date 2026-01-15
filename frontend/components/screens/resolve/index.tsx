@@ -4,34 +4,7 @@ import React, { useState } from "react";
 import type { FunctionCode, Question } from "@/types/oox";
 import ConflictCard from "./ConflictCard";
 import ResolveHeader from "./ResolveHeader";
-
-interface Props {
-  conflictBlock: FunctionCode[]; // [SystemWinner, UserWinner]
-  resolvedBlock: FunctionCode[]; // [SelectedWinner] (空なら未選択)
-  handleSelectOrder: (func: FunctionCode) => void;
-  handleConfirmConflict: () => void;
-  loading: boolean;
-  conflictQuestion?: Question;
-}
-
-type ResolveViewProps = {
-  systemWinner: FunctionCode;
-  userWinner: FunctionCode;
-  systemTitle: string;
-  userTitle: string;
-  systemDescription: string;
-  userDescription: string;
-  isSystemSelected: boolean;
-  isUserSelected: boolean;
-  hasSelection: boolean;
-  loading: boolean;
-  conflictQuestion: Question;
-  isDetailOpen: boolean;
-  onToggleDetail: () => void;
-  onSelectSystem: () => void;
-  onSelectUser: () => void;
-  onConfirm: () => void;
-};
+import type { ResolveScreenProps, ResolveViewProps } from "./types";
 
 export default function ResolveScreen({
   conflictBlock,
@@ -40,7 +13,7 @@ export default function ResolveScreen({
   handleConfirmConflict,
   loading,
   conflictQuestion,
-}: Props) {
+}: ResolveScreenProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // 安全策：データが足りない場合は何も表示しない
@@ -112,6 +85,11 @@ function ResolveView({
 }: ResolveViewProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] px-4 py-6 md:py-10 relative">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: "url(/images/oox_background.png)" }}
+      />
+      <div className="absolute inset-0 bg-white/20 pointer-events-none" />
       {/* --- 1. ヘッダー領域 --- */}
       <ResolveHeader
         conflictQuestion={conflictQuestion}

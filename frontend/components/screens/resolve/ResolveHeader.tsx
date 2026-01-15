@@ -1,13 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import type { Question } from "@/types/oox";
-
-type ResolveHeaderProps = {
-  conflictQuestion: Question;
-  isDetailOpen: boolean;
-  onToggleDetail: () => void;
-};
+import type { ResolveHeaderProps } from "./types";
 
 export default function ResolveHeader({
   conflictQuestion,

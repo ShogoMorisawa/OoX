@@ -2,19 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import type { FunctionCode } from "@/types/oox";
 import { getCellImage } from "@/constants/icons";
-
-interface CardProps {
-  type: "system" | "user";
-  functionCode: FunctionCode;
-  title: string;
-  description: string;
-  isSelected: boolean;
-  isOtherSelected: boolean;
-  onClick: () => void;
-  loading: boolean;
-}
+import type { ConflictCardProps } from "./types";
 
 export default function ConflictCard({
   type,
@@ -25,7 +14,7 @@ export default function ConflictCard({
   isOtherSelected,
   onClick,
   loading,
-}: CardProps) {
+}: ConflictCardProps) {
   const iconUrl = getCellImage(functionCode);
   const isSystem = type === "system";
 
