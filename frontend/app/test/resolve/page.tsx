@@ -113,6 +113,7 @@ export default function TestResolvePage() {
         conflictBlock={conflictBlock}
         resolvedBlock={resolvedBlock}
         conflictQuestion={MOCK_CONFLICT_QUESTION}
+        resolveCount={1}
         handleSelectOrder={handleSelectOrder}
         handleConfirmConflict={handleConfirmConflict}
         loading={loading}

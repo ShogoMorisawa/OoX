@@ -125,4 +125,3 @@ export default function WorldMobile({ users = [], loading = false }: Props) {
     </div>
   );
 }
-
