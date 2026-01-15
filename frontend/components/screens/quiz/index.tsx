@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useLayoutEffect, useRef } from "react";
-import { Quicksand } from "next/font/google";
 
 import QuizMobile from "./QuizMobile";
 import QuizPC from "./QuizPC";
@@ -33,16 +32,10 @@ export type QuizViewProps = {
   progress: number;
   loading: boolean;
   loadingMessage: string;
-  quicksandClassName: string;
   onSelect: (choiceId: AnswerValue) => void;
   onNext: () => void;
   onPrev: () => void;
 };
-
-const quicksand = Quicksand({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export default function QuizContainer({
   questions,
@@ -122,7 +115,6 @@ export default function QuizContainer({
     progress,
     loading,
     loadingMessage,
-    quicksandClassName: quicksand.className,
     onSelect: handleSelect,
     onNext: handleNext,
     onPrev: handlePrev,

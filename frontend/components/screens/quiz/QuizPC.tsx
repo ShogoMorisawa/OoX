@@ -12,7 +12,6 @@ export default function QuizPC(props: QuizViewProps) {
     isLastQuestion,
     loading,
     loadingMessage,
-    quicksandClassName,
     onSelect,
     onNext,
     onPrev,
@@ -117,7 +116,6 @@ export default function QuizPC(props: QuizViewProps) {
                       <div
                         className={`
                         flex items-center justify-center w-10 h-10 rounded-full shrink-0 font-bold text-lg shadow-sm transition-colors duration-300
-                        ${quicksandClassName}
                         ${
                           isSelected
                             ? "bg-sky-500 text-white"

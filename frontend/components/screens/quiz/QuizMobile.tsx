@@ -12,7 +12,6 @@ export default function QuizMobile(props: QuizViewProps) {
     isLastQuestion,
     loading,
     loadingMessage,
-    quicksandClassName,
     onSelect,
     onNext,
     onPrev,
@@ -113,7 +112,6 @@ export default function QuizMobile(props: QuizViewProps) {
                   <div
                     className={`
                     flex items-center justify-center w-8 h-8 rounded-full shrink-0 font-bold text-sm
-                    ${quicksandClassName}
                     ${
                       isSelected
                         ? "bg-sky-500 text-white"

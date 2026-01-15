@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Quicksand } from "next/font/google";
 
 type Props = {
   onStart: () => void;
@@ -9,24 +8,17 @@ type Props = {
 
 export type StartViewProps = {
   onStart: () => void;
-  titleClassName: string;
 };
-
-const quicksand = Quicksand({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export default function StartScreenContainer({ onStart }: Props) {
   const viewProps: StartViewProps = {
     onStart,
-    titleClassName: quicksand.className,
   };
 
   return <StartScreen {...viewProps} />;
 }
 
-function StartScreen({ onStart, titleClassName }: StartViewProps) {
+function StartScreen({ onStart }: StartViewProps) {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden">
       <div
@@ -36,17 +28,7 @@ function StartScreen({ onStart, titleClassName }: StartViewProps) {
       <div className="absolute inset-0 bg-white/20" />
 
       <div className="relative z-10 mb-6 flex flex-col items-center">
-        <h1
-          className={`
-            ${titleClassName}
-            text-7xl md:text-8xl
-            font-light
-            tracking-[0.2em]
-            text-transparent bg-clip-text bg-gradient-to-br from-slate-600 via-slate-500 to-sky-400
-            drop-shadow-lg
-            animate-float-slow
-          `}
-        >
+        <h1 className="text-7xl md:text-8xl font-light tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-br from-slate-600 via-slate-500 to-sky-400 drop-shadow-lg animate-float-slow">
           OoX
         </h1>
         <div className="w-16 h-1 bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-50 blur-[1px] rounded-full mt-2 animate-pulse" />
