@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import WorldPC from "@/components/screens/world/WorldPC";
 import WorldMobile from "@/components/screens/world/WorldMobile";
+import LoadingOverlay from "@/components/screens/world/LoadingOverlay";
 import type { WorldUserResult } from "@/types/oox";
 
 export default function WorldPage() {
@@ -40,13 +41,8 @@ export default function WorldPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50 text-sky-800">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin" />
-          <p className="text-sky-800 font-bold tracking-widest text-sm">
-            LOADING WORLD...
-          </p>
-        </div>
+      <div className="relative w-full h-screen">
+        <LoadingOverlay isMobile={isMobile} />
       </div>
     );
   }

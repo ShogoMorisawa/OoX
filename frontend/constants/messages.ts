@@ -22,3 +22,15 @@ export const TEST_MESSAGES = {
   QUIZ_TEST_DESCRIPTION: "?q=1 のように指定して任意の質問から開始できます",
   CALCULATE_TRIGGER: "テスト用: 計算トリガー",
 } as const;
+
+export const WORLD_MESSAGES = {
+  LOADING: "LOADING WORLD...",
+  INHABITANTS: "Inhabitants",
+  CLOSE: "閉じる",
+} as const;
+
+export const IMAGE_PATHS = {
+  BACKGROUND: "/images/oox_background.png",
+  WORLD_BACKGROUND: "/images/oox_world_background.png",
+  DEFAULT_ICON: "/images/oox_start_cell-red.png",
+} as const;

@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 
 import type { FunctionCode, WorldUserResult } from "@/types/oox";
+import { IMAGE_PATHS, WORLD_MESSAGES } from "@/constants/messages";
+import UserModal from "./UserModal";
+import LoadingOverlay from "./LoadingOverlay";
 
 type Props = {
   users?: WorldUserResult[];
@@ -104,7 +107,7 @@ export default function WorldPC({ users = [], loading = false }: Props) {
   return (
     <div
       className="relative w-full h-screen overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: "url('/images/oox_world_background.png')" }}
+      style={{ backgroundImage: `url('${IMAGE_PATHS.WORLD_BACKGROUND}')` }}
     >
       <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
 
@@ -113,7 +116,7 @@ export default function WorldPC({ users = [], loading = false }: Props) {
           OoX World
         </h1>
         <div className="bg-white/60 px-4 py-2 rounded-full text-sm text-sky-800 backdrop-blur-sm shadow-sm">
-          {users.length} Inhabitants
+          {users.length} {WORLD_MESSAGES.INHABITANTS}
         </div>
       </div>
 
@@ -158,69 +161,14 @@ export default function WorldPC({ users = [], loading = false }: Props) {
       </div>
 
       {selectedUser && (
-        <div
-          className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-sky-900/30 backdrop-blur-sm transition-all"
-          onClick={() => setSelectedUser(null)}
-        >
-          <div
-            className="bg-white/95 rounded-4xl p-6 md:p-10 max-w-lg w-full shadow-2xl animate-in fade-in zoom-in duration-300 relative overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-100 rounded-full blur-3xl" />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-100 rounded-full blur-3xl" />
-
-            <div className="relative z-10 flex flex-col items-center text-center space-y-5">
-              <div className="relative w-24 h-24">
-                <div className="absolute inset-0 bg-sky-200/50 rounded-full blur-xl animate-pulse" />
-                <Image
-                  src={
-                    selectedUser.icon_url || "/images/oox_start_cell-red.png"
-                  }
-                  alt="Icon"
-                  fill
-                  className="object-contain drop-shadow-lg"
-                />
-              </div>
-
-              <div>
-                <div className="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold tracking-widest mb-2 border border-slate-200">
-                  {selectedUser.dominant_function} ×{" "}
-                  {selectedUser.second_function}
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-sky-950 leading-tight">
-                  {selectedUser.title}
-                </h2>
-              </div>
-
-              <div className="w-full h-px bg-linear-to-r from-transparent via-slate-300 to-transparent" />
-
-              <div className="w-full max-h-[40vh] overflow-y-auto px-2">
-                <p className="text-sm md:text-base text-slate-700 leading-relaxed text-left whitespace-pre-wrap font-medium">
-                  {selectedUser.description}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="mt-2 px-10 py-3 rounded-full bg-sky-500 text-white shadow-lg shadow-sky-200 hover:bg-sky-600 hover:shadow-sky-300 hover:-translate-y-0.5 transition-all text-sm font-bold"
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
+        <UserModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          isMobile={false}
+        />
       )}
 
-      {loading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin" />
-            <p className="text-sky-800 font-bold tracking-widest text-sm">
-              LOADING WORLD...
-            </p>
-          </div>
-        </div>
-      )}
+      {loading && <LoadingOverlay isMobile={false} />}
     </div>
   );
 }
