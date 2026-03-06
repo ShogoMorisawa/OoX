@@ -1,120 +1,108 @@
-# OoX
+# 性格診断アプリ OoX
 
-質問回答から 8心理機能（Ni/Ne/Ti/Te/Fi/Fe/Si/Se）の序列・健全度・階層を算出し、最終的に AI 描写を生成する性格診断アプリです。
+### 質問に答えて、あなたのキャラを生み出そう！
 
-詳細仕様は `/Users/shogomorisawa/dev/personal/projects/oox/SPEC.md` を参照してください。
+<img width="500" height="500" alt="スクリーンショット 2025-12-19 1 06 04" src="https://github.com/user-attachments/assets/b73deaeb-9f82-4307-adc6-c1797c691b22" />
 
-## 構成
+OoXは、ユングの心理機能をベースに、独自のアルゴリズムで精神構造を解剖する内省エンジンです。心理機能の「序列」を定め、各機能の健全度を測定。それらを Dominant（王様） / High（騎士） / Middle（市民） / Low（迷子） の 4 階層に分類することで、その人の性格を多層的に描写する独自理論「OoX」を用いています。
 
-- `frontend/`: Next.js 16 + TypeScript + Tailwind CSS 4
-- `backend/`: Laravel 12 API（Bref + AWS Lambda 対応）
-- データストア: Supabase（questions / user_results）
+---
 
-## ユーザーフロー
+## 🧪 STEP 1: Quiz — 抽出と培養
 
-1. `Start`
-2. `Quiz`（comparison + diagnostic）
-3. `Resolve`（葛藤がある場合のみ）
-4. `Hierarchy`（8機能を4階層に割当）
-5. `Result`（タイトル + 描写表示）
-6. `World`（他ユーザー結果の閲覧）
+あなたの内面から「性格の成分」を抽出し、ラボで「細胞」として培養する最初の工程です。本作において、8 つの心理機能は、最終的にリザルト画面で誕生するキャラクターを構成する「細胞（Cell）」として定義されています。
 
-## アーキテクチャ概要
+### 1. 序列決定：Sequence（28 問）
 
-- `POST /api/calculate`
-  - comparison回答を元に **重み付きKemeny-Young法（8! 全順列評価）** で最適順序を算出
-  - conflicts と health（O/o/x）を返却
-- `POST /api/describe`
-  - 非同期ジョブを投入して `job_id` を返却
-- `GET /api/describe/status/{jobId}`
-  - `queued/processing/completed/failed` をポーリング取得
-- `POST /api/results`
-  - 最終結果を Supabase `user_results` に保存
+心理機能同士を戦わせる「総当たり戦（一対比較）」形式の質問です。「具体的なシーンでどちらの機能を選択するか」という二者択一を繰り返すことで、無意識下に積み上げられた価値判断の「証拠」を収集し、8 つの機能の純粋な優先順位を確定させます。
 
-## 技術スタック
+### 2. 健全度測定：Quality（24 問）
 
-### Frontend
+抽出された各細胞の「状態」を測定します。その機能が今のあなたにとって、自分を助ける「力（＋）」として機能しているか、あるいは自分を追い詰める「ストレス（ー）」の原因になっているかを分析します。
 
-- Next.js `^16.0.7`
-- React / React DOM `^19.2.3`
-- TypeScript `^5`
-- Tailwind CSS `^4`
-- Framer Motion `^12.23.26`
-- `@supabase/supabase-js` `^2.87.1`
+---
 
-### Backend
+## ⚙️ STEP 2: Resolve — 葛藤の解析とデータ調律
 
-- Laravel `^12.0`
-- PHP `^8.2`
-- Bref `^2.4`
-- `google-gemini-php/client` `^2.7`
-- `google-gemini-php/laravel` `^2.0`
+Quiz で収集された「証拠」を数学的に解析し、論理的な矛盾を解消するフェーズです。AI が計算して終わりではなく、抽出された成分をあなた自身の「意志」で調律します。
 
-## セットアップ
+### 1. Conflict Detection (Tarjan's Algorithm)
 
-### Frontend
+回答データを有向グラフ（Directed Graph）として扱い、Tarjan 法の強連結成分分解（SCC: Strongly Connected Components）を実行します。ユーザーの選択内に存在する「A > B > C > A」といった循環参照（Cycle）を、論理エラーではなく解決すべき「葛藤（Conflict）」として特定します。
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### 2. Manual Tuning（主観による順位確定）
 
-### Backend
+システムが矛盾を勝手に平均化することはありません。検出された「葛藤ブロック」はそのままユーザーに提示されます。`ResolvePC.tsx` のインターフェースを通じて、ユーザー自身の主観で「どの細胞がより優位か」を再定義（Manual Sort）し、8 つの機能を一本の線形リストへと確定させます。
 
-```bash
-cd backend
-composer setup
-composer run dev
-```
+---
 
-`composer setup` は以下を実行します。
-- `composer install`
-- `.env` 作成（未存在時）
-- `php artisan key:generate`
-- `php artisan migrate --force`
-- `npm install && npm run build`
+## 🏰 STEP 3: Hierarchy — 精神構造の階層化
 
-## 環境変数
+<img width="300" height="300" alt="スクリーンショット 2025-12-19 1 11 51" src="https://github.com/user-attachments/assets/ab0ba5e0-409d-4899-9c4c-783840b3e55c" />
 
-### Frontend
+Resolve で一本の線に並んだ 8 つの細胞に対し、あなたの精神世界での「役割」を割り当て、「精神 OS」のアーキテクチャを決定します。
 
-- `NEXT_PUBLIC_API_URL`
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- 👑 王様 (Dominant): 精神構造の中核。あなたのアイデンティティを支配し、最も信頼している「自分らしさ」の源です。
+- ⚔️ 騎士 (Knight): あなたを助け、守ってくれる強力な武器。意図的に使いこなし、困難を突破するための機能です。
+- 🏘️ 市民 (Citizen): 社会の中で、目立たず自然に振る舞うための適応力。集団との調和を保つための「擬態」の役割も担います。
+- 👣 迷子 (Lost Child): 普段は意識の届かない場所にいる機能。ストレス時に暴走して自分を振り回す「地雷」であり、同時に大いなる可能性が眠る「未開の地」でもあります。
 
-### Backend
+---
 
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_KEY`
-- `GEMINI_API_KEY`
-- `GEMINI_BASE_URL`（任意）
-- `GEMINI_REQUEST_TIMEOUT`
-- `DB_*`
-- `QUEUE_CONNECTION`
-- `CACHE_STORE`
+## 📝 STEP 4: Result — 誕生と描写
 
-## テスト / Lint
+<img width="300" height="300" alt="スクリーンショット 2025-12-19 1 14 07" src="https://github.com/user-attachments/assets/8d961d68-96b3-4601-9ae0-997448c409f1" />
 
-### Frontend
+培養された細胞たちが最終的な形を成し、あなたの精神の生態系を象徴する「種族」が誕生します。
 
-```bash
-cd frontend
-npm run lint
-npm run build
-```
+### 1. 種族名の付与
 
-### Backend
+バックエンドの計算ロジックにより、あなたの精神構造を象徴する二つ名（例：「深海の賢いムードメーカー」）が決定されます。これは、優位機能と社会適応のバランスを独自のアルゴリズムで掛け合わせたものです。
 
-```bash
-cd backend
-composer test
-```
+### 2. 生態系レポート (Google Gemini API)
 
-## デプロイ補足
+最新の AI が、確定したデータをもとにあなたの取扱説明書を生成します。あなたが世界をどう捉え、どこからエネルギーを得ているのかを、詩的な言語表現で描写します。
 
-`backend/serverless.yml` で AWS Lambda（`ap-northeast-1`）向けに以下を定義しています。
-- `web`（API）
-- `artisan`（CLI）
-- `worker`（1分間隔で queue:work 実行）
+---
 
+## 🌐 WORLD — 拡張される共有生態系
+
+<img width="700" height="300" alt="スクリーンショット 2025-12-19 1 15 14" src="https://github.com/user-attachments/assets/f57b619d-cf5f-4c3f-8123-851fd436ccec" />
+
+診断を終えたあなたのキャラクターは、他のユーザーたちが息づく広大な「WORLD」へと解き放たれます。
+
+### 1. バイオーム・マッピング（Spatial Distribution）
+
+- 空間的な自己位置把握: 「自分はどの機能の領域に属しているのか」「周りにはどんな種族がいるのか」を、直感的な座標データとして俯瞰できます。
+- 動的なクラスタリング: 同じ第二機能（騎士）を持つユーザー同士が同じエリアに集まることで、精神的な親和性が視覚的な「群れ」として表現されます。
+
+### 2. 他者の「取扱説明書」へのアクセス
+
+WORLD に漂う他の細胞をクリックすることで、その人の「種族名」や「AI による生態レポート」を閲覧できます。Supabase からリアルタイムに取得される他者のデータを参照し、自分とは異なる OS を持つ存在を深く理解するための資料として活用できます。
+
+### 🛠 技術スタック / Technology Stack
+
+本プロジェクトは、最新のフレームワークとサーバーレスアーキテクチャを組み合わせた、高スケーラブルな構成で構築されています。
+
+#### **Frontend**
+
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4
+
+#### **Backend**
+
+- **Framework:** Laravel 12 (PHP 8.2+)
+- **Serverless:** Bref / AWS Lambda (PHP on Serverless)
+- **AI Engine:** Google Gemini API
+- **Core Logic:** Tarjan's SCC Algorithm (グラフ理論を用いた葛藤検知)
+
+#### **Infrastructure & Database**
+
+- **Database:** Supabase (PostgreSQL)
+- **Deployment:** Vercel (Frontend), AWS Lambda via Serverless Framework (Backend)
+
+#### **Architecture**
+
+- **Async Processing:** AWS Lambda Worker による非同期生成パイプライン
+- **Polling API:** ジョブステータス監視による、タイムアウトに強いレスポンス制御
